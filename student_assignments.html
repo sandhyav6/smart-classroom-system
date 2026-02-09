@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignments - VIT</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .assignment-card.completed {
+            border-left: 4px solid #28a745;
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(40, 167, 69, 0.1));
+        }
+
+        .assignment-card.completed:hover {
+            border-left-color: #1e7e34;
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.15));
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Student</span>
+                <span class="role">CSE - B.Tech | CGPA: <span id="cgpa-display">0.0</span></span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="student_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_dashboard.html')"><i
+                    class="fas fa-home"></i>
+                Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_attendance.html')"><i
+                    class="fas fa-calendar-alt"></i>
+                Attendance Record</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_timetable.html')"><i
+                    class="fas fa-table"></i>
+                Timetable</a>
+            <a href="#" class="nav-item active" onclick="navigateTo('student_assignments.html')"><i
+                    class="fas fa-tasks"></i>
+                Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_chat.html')"><i
+                    class="fas fa-comments"></i> Chat
+                with
+                Teachers</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_marks.html')"><i
+                    class="fas fa-chart-bar"></i>
+                Marks &
+                Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_materials.html')"><i
+                    class="fas fa-book"></i>
+                Study
+                Materials</a>
+            <a href="index.html" class="nav-item" style="color: #ff0000;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <!-- Assignments View -->
+        <main class="main-content" id="assignments-view" style="display: block; grid-template-columns: 1fr;">
+            <div class="marks-container">
+                <!-- Overview -->
+                <div id="assignments-overview">
+                    <h2>Assignments</h2>
+
+                    <!-- Subject Filter -->
+                    <div class="filters" style="margin-bottom: 2rem;">
+                        <div class="filter-group">
+                            <label>Select Subject</label>
+                            <select id="subject-filter" onchange="renderAssignments()"
+                                style="padding: 0.8rem 1.5rem; border-radius: 12px; border: 2px solid rgba(38, 69, 8, 0.2); background: rgba(255, 255, 255, 0.3); color: #264508; font-size: 1rem; font-weight: 600;">
+                                <option value="">-- Select a Subject --</option>
+                                <option value="All">Show All Subjects</option>
+                                <option value="Programming in C">Programming in C</option>
+                                <option value="Calculus">Calculus</option>
+                                <option value="Physics">Physics</option>
+                                <option value="Data Structures">Data Structures</option>
+                                <option value="Linear Algebra">Linear Algebra</option>
+                                <option value="Digital Logic Design">Digital Logic Design</option>
+                                <option value="Ethics and Values">Ethics and Values</option>
+                                <option value="Object-Oriented Programming">Object-Oriented Programming</option>
+                                <option value="Database Management Systems">Database Management Systems</option>
+                                <option value="Operating Systems">Operating Systems</option>
+                                <option value="Computer Networks">Computer Networks</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="assignments-display" style="display: none;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                            <!-- Upcoming Assignments -->
+                            <div>
+                                <h3
+                                    style="color: #264508; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(38, 69, 8, 0.2);">
+                                    <i class="fas fa-clock"></i> Upcoming Assignments
+                                </h3>
+                                <div id="upcoming-assignments">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+
+                            <!-- Past Due Assignments -->
+                            <div>
+                                <h3
+                                    style="color: #ff0000; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(255, 0, 0, 0.2);">
+                                    <i class="fas fa-exclamation-triangle"></i> Past Due
+                                </h3>
+                                <div id="pastdue-assignments">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+
+                            <!-- Completed Assignments -->
+                            <div>
+                                <h3
+                                    style="color: #28a745; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(40, 167, 69, 0.2);">
+                                    <i class="fas fa-check-circle"></i> Completed
+                                </h3>
+                                <div id="completed-assignments">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment Detail View -->
+                <div id="assignment-detail" class="hidden">
+                    <button onclick="backToAssignments()"
+                        style="background:#264508; color:white; border:none; padding:0.8rem 1.5rem; border-radius:10px; cursor:pointer; margin-bottom:1.5rem; font-weight:600;">
+                        <i class="fas fa-arrow-left"></i> Back to Assignments
+                    </button>
+
+                    <div class="assignment-detail-container">
+                        <h2 id="detail-assignment-title" style="color: #264508; margin-bottom: 1rem;"></h2>
+
+                        <div class="detail-info-grid">
+                            <div class="detail-row">
+                                <div class="detail-label"><i class="fas fa-book"></i> Course:</div>
+                                <div class="detail-value" id="detail-course"></div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label"><i class="fas fa-code"></i> Course Code:</div>
+                                <div class="detail-value" id="detail-course-code"></div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label"><i class="fas fa-calendar-alt"></i> Due Date:</div>
+                                <div class="detail-value" id="detail-due-date"></div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem;">
+                            <h3 style="color: #264508; margin-bottom: 1rem;">Assignment Description</h3>
+                            <div id="detail-description"
+                                style="background: #F5F0BB; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #264508; line-height: 1.6;">
+                            </div>
+                        </div>
+
+                        <!-- Submission Details (for completed assignments) -->
+                        <div id="submission-details-section" style="margin-top: 2rem; display: none;">
+                            <h3 style="color: #28a745; margin-bottom: 1rem;"><i class="fas fa-check-circle"></i>
+                                Submission Details</h3>
+                            <div
+                                style="background: #d4edda; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #28a745;">
+                                <div class="detail-row">
+                                    <div class="detail-label"><i class="fas fa-calendar-check"></i> Submitted On:</div>
+                                    <div class="detail-value" id="detail-submitted-date"></div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label"><i class="fas fa-file"></i> Uploaded File:</div>
+                                    <div class="detail-value" id="detail-uploaded-file"></div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label"><i class="fas fa-check"></i> Status:</div>
+                                    <div class="detail-value" style="color: #28a745; font-weight: 700;">✓ Submitted
+                                        Successfully</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="submit-section" style="margin-top: 2rem;">
+                            <h3 style="color: #264508; margin-bottom: 1rem;">Submit Assignment</h3>
+                            <div
+                                style="background: #F5F0BB; padding: 2rem; border-radius: 12px; border: 2px solid rgba(38, 69, 8, 0.2);">
+                                <div style="margin-bottom: 1rem;">
+                                    <label
+                                        style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #264508;">
+                                        <i class="fas fa-file-upload"></i> Upload File:
+                                    </label>
+                                    <input type="file" id="assignment-file-input"
+                                        style="padding: 0.8rem; border: 2px solid rgba(38, 69, 8, 0.3); border-radius: 8px; width: 100%; background: white; color: #264508; font-weight: 500;">
+                                </div>
+                                <button onclick="submitAssignment()"
+                                    style="background:#264508; color:white; border:none; padding:1rem 2rem; border-radius:10px; cursor:pointer; font-weight:700; font-size: 1rem; margin-top: 1rem;">
+                                    <i class="fas fa-upload"></i> Submit Assignment
+                                </button>
+                                <div id="submission-status" style="margin-top: 1rem; font-weight: 600;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Backend Logic -->
+    <script src="backend.js"></script>
+
+    <script>
+        // --- Initialization ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullname = urlParams.get('fullname') || "Arjun Sharma";
+        const studentData = Backend.getStudent(fullname);
+
+        document.getElementById('profile-name').innerText = fullname;
+        document.getElementById('cgpa-display').innerText = studentData.cgpa;
+
+        // Navigation helper
+        function navigateTo(page) {
+            window.location.href = page + '?fullname=' + encodeURIComponent(fullname);
+        }
+
+        // --- Assignments Logic ---
+        const assignmentsData = [
+            {
+                id: 1,
+                title: 'Binary Search Tree Implementation',
+                course: 'Data Structures',
+                courseCode: 'CSE201',
+                dueDate: '2026-02-05',
+                shortDescription: 'Implement a binary search tree with insertion, deletion, and traversal operations.',
+                detailedDescription: 'Create a complete binary search tree implementation in C programming language. Your implementation should include:\\n\\n• Node structure with left, right pointers and data\\n• Insert operation with proper placement\\n• Delete operation handling all cases (leaf, one child, two children)\\n• Inorder, Preorder, and Postorder traversal functions\\n• Search functionality\\n• Display function to show tree structure\\n\\nSubmit a single .c file with proper comments explaining your logic. Include a main function with test cases demonstrating all operations.'
+            },
+            {
+                id: 2,
+                title: 'Linear Algebra Problem Set',
+                course: 'Linear Algebra',
+                courseCode: 'MAT201',
+                dueDate: '2026-02-08',
+                shortDescription: 'Solve problems on eigenvalues, eigenvectors, and matrix transformations.',
+                detailedDescription: 'Complete the following problems from Chapter 5:\\n\\n1. Find eigenvalues and eigenvectors for the given 3x3 matrices (Problems 5.1-5.5)\\n2. Determine if the matrices are diagonalizable (Problems 5.6-5.8)\\n3. Apply matrix transformations and sketch the results (Problems 5.9-5.12)\\n4. Prove the given theorems related to eigenspaces (Problems 5.13-5.15)\\n\\nShow all work clearly. Box final answers. Submit as a single PDF file. Handwritten solutions are acceptable if scanned clearly.'
+            },
+            {
+                id: 3,
+                title: 'Digital Logic Circuit Design',
+                course: 'Digital Logic Design',
+                courseCode: 'CSE202',
+                dueDate: '2026-02-10',
+                shortDescription: 'Design a 4-bit ALU using logic gates and create truth tables.',
+                detailedDescription: 'Design and simulate a 4-bit Arithmetic Logic Unit (ALU) capable of performing the following operations:\\n\\n• Addition\\n• Subtraction\\n• AND operation\\n• OR operation\\n• NOT operation\\n• XOR operation\\n\\nRequirements:\\n1. Draw the complete circuit diagram using standard logic gates\\n2. Create truth tables for each operation\\n3. Implement the design in Logisim or similar tool\\n4. Include mode selection bits to choose between operations\\n5. Add overflow and zero flags\\n\\nSubmit: Circuit diagram (PDF), truth tables (PDF), and simulation file (.circ)'
+            },
+            {
+                id: 4,
+                title: 'Ethics Case Study Analysis',
+                course: 'Ethics and Values',
+                courseCode: 'HUM201',
+                dueDate: '2026-02-12',
+                shortDescription: 'Analyze the ethical implications of AI in healthcare.',
+                detailedDescription: 'Write a 1500-2000 word essay analyzing the ethical implications of using Artificial Intelligence in healthcare decision-making.\\n\\nYour analysis should cover:\\n\\n• Patient privacy and data security concerns\\n• Bias in AI algorithms and its impact on healthcare equity\\n• Accountability and liability issues\\n• The balance between AI efficiency and human judgment\\n• Informed consent in AI-assisted diagnosis\\n\\nUse at least 5 academic sources (journals, books, conference papers). Format: APA style, Times New Roman 12pt, double-spaced. Include a bibliography.\\n\\nSubmit as a Word document or PDF.'
+            },
+            {
+                id: 5,
+                title: 'Programming Assignment 3',
+                course: 'Programming in C',
+                courseCode: 'CSE101',
+                dueDate: '2026-01-28',
+                shortDescription: 'File handling and structure manipulation in C.',
+                detailedDescription: 'Create a C program for student record management using file handling and structures.\\n\\nFeatures required:\\n• Define a structure for student records (ID, name, marks in 5 subjects, total, percentage)\\n• Add new student records\\n• Display all records\\n• Search for a student by ID\\n• Update student information\\n• Delete a student record\\n• Calculate and display class average\\n• Save all data to a file\\n• Load data from file on program start\\n\\nUse proper error handling and validate all inputs. Submit .c file with sample data file.'
+            },
+            {
+                id: 6,
+                title: 'Calculus Integration Problems',
+                course: 'Calculus',
+                courseCode: 'MAT101',
+                dueDate: '2026-01-25',
+                shortDescription: 'Solve definite and indefinite integration problems.',
+                detailedDescription: 'Complete Chapter 6 integration exercises:\\n\\n• Problems 6.1-6.15: Indefinite integrals using substitution method\\n• Problems 6.16-6.25: Integration by parts\\n• Problems 6.26-6.35: Definite integrals and area calculations\\n• Problems 6.36-6.40: Applications of integration (volume, arc length)\\n\\nShow complete steps. Circle final answers. No calculator allowed except for verification.\\n\\nSubmit scanned/typed solutions as PDF.'
+            },
+            // Completed Assignments
+            {
+                id: 7,
+                title: 'Object-Oriented Programming Concepts',
+                course: 'Object-Oriented Programming',
+                courseCode: 'CSE301',
+                dueDate: '2026-01-20',
+                shortDescription: 'Implement inheritance and polymorphism in Java.',
+                detailedDescription: 'Create a Java program demonstrating inheritance and polymorphism concepts:\\n\\n• Design a base class Vehicle with properties and methods\\n• Create derived classes Car, Bike, and Truck\\n• Implement method overriding for display() and calculateFare()\\n• Use polymorphism to handle different vehicle types\\n• Include constructors and proper encapsulation\\n\\nSubmit .java files with proper documentation.',
+                completed: true,
+                submittedDate: '2026-01-19',
+                uploadedFile: 'OOP_Assignment_ArjunSharma.zip'
+            },
+            {
+                id: 8,
+                title: 'Database Normalization Exercise',
+                course: 'Database Management Systems',
+                courseCode: 'CSE302',
+                dueDate: '2026-01-18',
+                shortDescription: 'Normalize a database schema to 3NF.',
+                detailedDescription: 'Given a denormalized database schema for a library management system:\\n\\n• Identify functional dependencies\\n• Convert to 1NF, 2NF, and 3NF\\n• Draw ER diagrams for each step\\n• Explain the normalization process\\n• Create SQL DDL statements for final schema\\n\\nSubmit a PDF document with all steps clearly shown.',
+                completed: true,
+                submittedDate: '2026-01-17',
+                uploadedFile: 'DBMS_Normalization_ArjunSharma.pdf'
+            },
+            {
+                id: 9,
+                title: 'Operating Systems Process Scheduling',
+                course: 'Operating Systems',
+                courseCode: 'CSE303',
+                dueDate: '2026-01-15',
+                shortDescription: 'Implement and compare CPU scheduling algorithms.',
+                detailedDescription: 'Write a C program to simulate the following CPU scheduling algorithms:\\n\\n• First Come First Serve (FCFS)\\n• Shortest Job First (SJF)\\n• Round Robin (RR)\\n• Priority Scheduling\\n\\nFor each algorithm, calculate:\\n• Average waiting time\\n• Average turnaround time\\n• Generate Gantt charts\\n\\nTest with at least 5 processes. Submit source code and output screenshots.',
+                completed: true,
+                submittedDate: '2026-01-14',
+                uploadedFile: 'OS_Scheduling_ArjunSharma.c'
+            },
+            {
+                id: 10,
+                title: 'Network Protocol Analysis',
+                course: 'Computer Networks',
+                courseCode: 'CSE304',
+                dueDate: '2026-01-10',
+                shortDescription: 'Analyze TCP/IP packet captures using Wireshark.',
+                detailedDescription: 'Capture and analyze network traffic using Wireshark:\\n\\n• Capture HTTP, HTTPS, and DNS traffic\\n• Analyze TCP three-way handshake\\n• Identify packet headers and payloads\\n• Document protocol behavior\\n• Explain security implications\\n\\nSubmit Wireshark capture files (.pcap) and analysis report in PDF format.',
+                completed: true,
+                submittedDate: '2026-01-09',
+                uploadedFile: 'Network_Analysis_ArjunSharma.zip'
+            }
+        ];
+
+        let currentAssignment = null;
+
+        function renderAssignments() {
+            const selectedSubject = document.getElementById('subject-filter').value;
+            const displayContainer = document.getElementById('assignments-display');
+            const today = new Date();
+            const upcomingContainer = document.getElementById('upcoming-assignments');
+            const pastDueContainer = document.getElementById('pastdue-assignments');
+            const completedContainer = document.getElementById('completed-assignments');
+
+            upcomingContainer.innerHTML = '';
+            pastDueContainer.innerHTML = '';
+            completedContainer.innerHTML = '';
+
+            // Hide assignments display if no subject selected
+            if (!selectedSubject) {
+                displayContainer.style.display = 'none';
+                return;
+            }
+
+            displayContainer.style.display = 'block';
+
+            // Filter assignments by subject
+            let filteredAssignments = assignmentsData;
+            if (selectedSubject !== 'All') {
+                filteredAssignments = assignmentsData.filter(a => a.course === selectedSubject);
+            }
+
+            filteredAssignments.forEach(assignment => {
+                const dueDate = new Date(assignment.dueDate);
+                const isPastDue = dueDate < today;
+                const isCompleted = assignment.completed === true;
+
+                const card = `
+                    <div class="assignment-card ${isPastDue && !isCompleted ? 'past-due' : ''} ${isCompleted ? 'completed' : ''}" onclick="showAssignmentDetail(${assignment.id})">
+                        <div class="assignment-title">${assignment.title}</div>
+                        <div class="assignment-meta">
+                            <div class="assignment-meta-item">
+                                <i class="fas fa-book"></i> ${assignment.course} (${assignment.courseCode})
+                            </div>
+                            <div class="assignment-meta-item assignment-due-date ${isPastDue && !isCompleted ? 'overdue' : ''}">
+                                <i class="fas fa-calendar-alt"></i> ${isCompleted ? 'Submitted: ' + new Date(assignment.submittedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Due: ' + dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </div>
+                        </div>
+                        <div class="assignment-description">${assignment.shortDescription}</div>
+                    </div>
+                `;
+
+                if (isCompleted) {
+                    completedContainer.innerHTML += card;
+                } else if (isPastDue) {
+                    pastDueContainer.innerHTML += card;
+                } else {
+                    upcomingContainer.innerHTML += card;
+                }
+            });
+
+            if (upcomingContainer.innerHTML === '') {
+                upcomingContainer.innerHTML = '<p style="color:#264508; opacity:0.7;">No upcoming assignments</p>';
+            }
+
+            if (pastDueContainer.innerHTML === '') {
+                pastDueContainer.innerHTML = '<p style="color:#264508; opacity:0.7;">No past due assignments</p>';
+            }
+
+            if (completedContainer.innerHTML === '') {
+                completedContainer.innerHTML = '<p style="color:#264508; opacity:0.7;">No completed assignments</p>';
+            }
+        }
+
+        function showAssignmentDetail(assignmentId) {
+            currentAssignment = assignmentsData.find(a => a.id === assignmentId);
+            if (!currentAssignment) return;
+
+            document.getElementById('assignments-overview').classList.add('hidden');
+            document.getElementById('assignment-detail').classList.remove('hidden');
+
+            document.getElementById('detail-assignment-title').innerText = currentAssignment.title;
+            document.getElementById('detail-course').innerText = currentAssignment.course;
+            document.getElementById('detail-course-code').innerText = currentAssignment.courseCode;
+
+            const dueDate = new Date(currentAssignment.dueDate);
+            document.getElementById('detail-due-date').innerText = dueDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+            document.getElementById('detail-description').innerHTML = currentAssignment.detailedDescription.replace(/\\n/g, '<br>');
+
+            // Handle completed assignments
+            const submissionDetailsSection = document.getElementById('submission-details-section');
+            const submitSection = document.getElementById('submit-section');
+
+            if (currentAssignment.completed) {
+                // Show submission details, hide submit section
+                submissionDetailsSection.style.display = 'block';
+                submitSection.style.display = 'none';
+
+                const submittedDate = new Date(currentAssignment.submittedDate);
+                document.getElementById('detail-submitted-date').innerText = submittedDate.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                document.getElementById('detail-uploaded-file').innerHTML = `<i class="fas fa-file-archive"></i> ${currentAssignment.uploadedFile}`;
+            } else {
+                // Show submit section, hide submission details
+                submissionDetailsSection.style.display = 'none';
+                submitSection.style.display = 'block';
+                document.getElementById('submission-status').innerHTML = '';
+                document.getElementById('assignment-file-input').value = '';
+            }
+        }
+
+        function backToAssignments() {
+            document.getElementById('assignment-detail').classList.add('hidden');
+            document.getElementById('assignments-overview').classList.remove('hidden');
+            currentAssignment = null;
+        }
+
+        function submitAssignment() {
+            const fileInput = document.getElementById('assignment-file-input');
+            const statusDiv = document.getElementById('submission-status');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                statusDiv.innerHTML = '<span style="color:#ff0000;"><i class="fas fa-exclamation-circle"></i> Please select a file to upload</span>';
+                return;
+            }
+
+            const fileName = fileInput.files[0].name;
+            statusDiv.innerHTML = `<span style="color:#264508;"><i class="fas fa-check-circle"></i> Assignment submitted successfully! File: ${fileName}</span>`;
+
+            // Simulate upload delay
+            setTimeout(() => {
+                statusDiv.innerHTML += '<br><span style="color:#264508; opacity:0.8;">You can resubmit if needed before the deadline.</span>';
+            }, 1000);
+        }
+
+        // Don't render initially - wait for subject selection
+
+        // Check if assignmentId is in URL and auto-navigate to it
+        const assignmentId = urlParams.get('assignmentId');
+        if (assignmentId) {
+            const assignment = assignmentsData.find(a => a.id === parseInt(assignmentId));
+            if (assignment) {
+                // Auto-select the subject
+                document.getElementById('subject-filter').value = assignment.course;
+                // Render assignments for that subject
+                renderAssignments();
+                // After a short delay, show the assignment detail
+                setTimeout(() => {
+                    showAssignmentDetail(parseInt(assignmentId));
+                }, 100);
+            }
+        }
+    </script>
+</body>
+
+</html>

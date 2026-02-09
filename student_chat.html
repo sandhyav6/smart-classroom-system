@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Teachers - VIT</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Student</span>
+                <span class="role">CSE - B.Tech | CGPA: <span id="cgpa-display">0.0</span></span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="student_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_dashboard.html')"><i
+                    class="fas fa-home"></i>
+                Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_attendance.html')"><i
+                    class="fas fa-calendar-alt"></i>
+                Attendance Record</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_timetable.html')"><i
+                    class="fas fa-table"></i>
+                Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_assignments.html')"><i
+                    class="fas fa-tasks"></i>
+                Assignments</a>
+            <a href="#" class="nav-item active" onclick="navigateTo('student_chat.html')"><i
+                    class="fas fa-comments"></i> Chat with
+                Teachers</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_marks.html')"><i
+                    class="fas fa-chart-bar"></i>
+                Marks &
+                Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_materials.html')"><i
+                    class="fas fa-book"></i>
+                Study
+                Materials</a>
+            <a href="index.html" class="nav-item" style="color: #ff0000;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <!-- Chat View -->
+        <main class="main-content" id="chat-view" style="display: block; grid-template-columns: 1fr;">
+            <div class="marks-container">
+                <h2>Chat with Teachers</h2>
+
+                <div id="teacher-selection-view">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Select Subject</label>
+                            <select id="subject-select" onchange="selectSubject()">
+                                <option value="">-- Choose a Subject --</option>
+                                <option value="Programming in C">Programming in C</option>
+                                <option value="Calculus">Calculus</option>
+                                <option value="Physics">Physics</option>
+                                <option value="English">English Communication</option>
+                                <option value="Data Structures">Data Structures</option>
+                                <option value="Linear Algebra">Linear Algebra</option>
+                                <option value="Digital Logic Design">Digital Logic Design</option>
+                                <option value="Ethics and Values">Ethics and Values</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chat-window" class="hidden">
+                    <button onclick="backToTeachers()"
+                        style="background: #264508; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 600; margin-bottom: 1.5rem; font-size: 1rem;">
+                        <i class="fas fa-arrow-left"></i> Back to Teachers
+                    </button>
+
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <div
+                                style="width:40px; height:40px; border-radius:50%; background: rgba(38, 69, 8, 0.2); display: flex; align-items: center; justify-content: center; border: 2px solid #264508;">
+                                <i class="fas fa-user" style="font-size: 1.2rem; color: #264508;" id="chat-t-img"></i>
+                            </div>
+                            <div>
+                                <h4 id="chat-t-name">Teacher Name</h4>
+                                <span id="chat-t-status"
+                                    style="font-size:0.8rem; color: #264508; font-weight: 600;">Online</span>
+                            </div>
+                        </div>
+
+                        <div class="chat-messages" id="chat-messages"></div>
+
+                        <div class="chat-input">
+                            <input type="text" id="msg-input" placeholder="Type your message..."
+                                onkeypress="handleEnter(event)">
+                            <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Backend Logic -->
+    <script src="backend.js"></script>
+
+    <script>
+        // --- Initialization ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullname = urlParams.get('fullname') || "Arjun Sharma";
+        const studentData = Backend.getStudent(fullname);
+
+        document.getElementById('profile-name').innerText = fullname;
+        document.getElementById('cgpa-display').innerText = studentData.cgpa;
+
+        // Navigation helper
+        function navigateTo(page) {
+            window.location.href = page + '?fullname=' + encodeURIComponent(fullname);
+        }
+
+        // --- Chat Logic ---
+        // Subject to Faculty Mapping
+        const subjectFacultyMap = {
+            'Programming in C': { name: 'Dr. Rajesh Kumar', online: true },
+            'Calculus': { name: 'Dr. Srinivas Rao', online: true },
+            'Physics': { name: 'Dr. Madhavi Reddy', online: false },
+            'English': { name: 'Prof. Sarah Johnson', online: true },
+            'Data Structures': { name: 'Dr. Vikram Patel', online: true },
+            'Linear Algebra': { name: 'Dr. Ramesh Chand', online: false },
+            'Digital Logic Design': { name: 'Dr. Priya Menon', online: true },
+            'Ethics and Values': { name: 'Dr. Lakshmi Iyengar', online: true }
+        };
+
+        function selectSubject() {
+            const subject = document.getElementById('subject-select').value;
+            if (!subject) return;
+
+            const faculty = subjectFacultyMap[subject];
+            if (faculty) {
+                openChat(faculty.name, subject, faculty.online);
+            }
+        }
+
+        function openChat(name, subject, online) {
+            document.getElementById('teacher-selection-view').classList.add('hidden');
+            document.getElementById('chat-window').classList.remove('hidden');
+            document.getElementById('chat-t-name').innerText = name;
+            document.getElementById('chat-t-status').innerText = online ? 'Online' : 'Offline';
+            document.getElementById('chat-t-status').style.color = online ? '#28a745' : '#6c757d';
+
+            // Reset chat with subject-specific greeting
+            document.getElementById('chat-messages').innerHTML = `<div class="message received">Hello! I'm ${name}, your ${subject} instructor. How can I help you today?</div>`;
+        }
+
+        function backToTeachers() {
+            document.getElementById('chat-window').classList.add('hidden');
+            document.getElementById('teacher-selection-view').classList.remove('hidden');
+            document.getElementById('subject-select').value = ''; // Reset subject selector
+        }
+
+        function handleEnter(e) { if (e.key === 'Enter') sendMessage(); }
+
+        function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const txt = input.value.trim();
+            if (!txt) return;
+
+            const div = document.createElement('div');
+            div.className = 'message sent';
+            div.innerText = txt;
+            document.getElementById('chat-messages').appendChild(div);
+            input.value = '';
+
+            Backend.simulateResponse(document.getElementById('chat-t-name').innerText, (res) => {
+                if (res === "Typing...") {
+                    const t = document.createElement('div'); t.className = 'typing-indicator'; t.id = 'typing';
+                    t.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+                    document.getElementById('chat-messages').appendChild(t);
+                } else {
+                    document.getElementById('typing')?.remove();
+                    const r = document.createElement('div'); r.className = 'message received'; r.innerText = res;
+                    document.getElementById('chat-messages').appendChild(r);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

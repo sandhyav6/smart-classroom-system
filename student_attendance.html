@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Records - VIT</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Student</span>
+                <span class="role">CSE - B.Tech | CGPA: <span id="cgpa-display">0.0</span></span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="student_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_dashboard.html')"><i class="fas fa-home"></i>
+                Dashboard</a>
+            <a href="#" class="nav-item active" onclick="navigateTo('student_attendance.html')"><i
+                    class="fas fa-calendar-alt"></i>
+                Attendance Record</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_timetable.html')"><i class="fas fa-table"></i>
+                Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_assignments.html')"><i class="fas fa-tasks"></i>
+                Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_chat.html')"><i class="fas fa-comments"></i> Chat
+                with
+                Teachers</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_marks.html')"><i class="fas fa-chart-bar"></i>
+                Marks &
+                Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_materials.html')"><i class="fas fa-book"></i>
+                Study
+                Materials</a>
+            <a href="index.html" class="nav-item" style="color: #ff0000;"><i
+                    class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <!-- Attendance Records View -->
+        <main class="main-content" id="attendance-view" style="display: block; grid-template-columns: 1fr;">
+            <div class="marks-container">
+                <div id="attendance-overview">
+                    <h2>Attendance Records</h2>
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Select Semester</label>
+                            <select id="attendance-sem-select" onchange="renderAttendance()">
+                                <option value="Semester 1">Semester 1</option>
+                                <option value="Semester 2">Semester 2</option>
+                                <option value="Semester 3">Semester 3</option>
+                                <option value="Semester 4">Semester 4</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Subject</th>
+                                    <th>Classes Attended</th>
+                                    <th>Total Classes</th>
+                                    <th>Percentage</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Detailed Attendance View -->
+                <div id="attendance-detail" class="hidden">
+                    <button onclick="backToAttendanceOverview()"
+                        style="background:#264508; color:white; border:none; padding:0.8rem 1.5rem; border-radius:10px; cursor:pointer; margin-bottom:1.5rem; font-weight:600;">
+                        <i class="fas fa-arrow-left"></i> Back to Overview
+                    </button>
+                    <h3 id="detail-subject-name"></h3>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                        <div>
+                            <h4 style="color:#264508; margin-bottom:1rem; font-size:1.2rem;">Classes Attended</h4>
+                            <div id="attended-dates" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+                        </div>
+                        <div>
+                            <h4 style="color:#ff0000; margin-bottom:1rem; font-size:1.2rem;">Classes Missed</h4>
+                            <div id="missed-dates" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Backend Logic -->
+    <script src="backend.js"></script>
+
+    <script>
+        // --- Initialization ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullname = urlParams.get('fullname') || "Arjun Sharma";
+        const studentData = Backend.getStudent(fullname);
+
+        document.getElementById('profile-name').innerText = fullname;
+        document.getElementById('cgpa-display').innerText = studentData.cgpa;
+
+        // Navigation helper
+        function navigateTo(page) {
+            window.location.href = page + '?fullname=' + encodeURIComponent(fullname);
+        }
+
+        // --- Attendance Logic ---
+        const attendanceData = {
+            'Semester 1': [
+                {
+                    code: 'CSE101', name: 'Programming in C', attended: 38, total: 42,
+                    attendedDates: ['2026-01-03', '2026-01-05', '2026-01-08', '2026-01-10', '2026-01-12', '2026-01-15', '2026-01-17', '2026-01-19', '2026-01-22', '2026-01-24', '2026-01-26', '2026-01-29', '2026-01-31', '2026-02-02', '2026-02-05', '2026-02-07', '2026-02-09', '2026-02-12', '2026-02-14', '2026-02-16', '2026-02-19', '2026-02-21', '2026-02-23', '2026-02-26', '2026-02-28', '2026-03-02', '2026-03-05', '2026-03-07', '2026-03-09', '2026-03-12', '2026-03-14', '2026-03-16', '2026-03-19', '2026-03-21', '2026-03-23', '2026-03-26', '2026-03-28', '2026-03-30'],
+                    missedDates: ['2026-01-20', '2026-02-18', '2026-03-11', '2026-03-25']
+                },
+                {
+                    code: 'MAT101', name: 'Calculus', attended: 35, total: 40,
+                    attendedDates: ['2026-01-04', '2026-01-06', '2026-01-09', '2026-01-11', '2026-01-13', '2026-01-16', '2026-01-18', '2026-01-20', '2026-01-23', '2026-01-25', '2026-01-27', '2026-01-30', '2026-02-01', '2026-02-03', '2026-02-06', '2026-02-08', '2026-02-10', '2026-02-13', '2026-02-15', '2026-02-17', '2026-02-20', '2026-02-22', '2026-02-24', '2026-02-27', '2026-03-01', '2026-03-03', '2026-03-06', '2026-03-08', '2026-03-10', '2026-03-13', '2026-03-15', '2026-03-17', '2026-03-20', '2026-03-22', '2026-03-24'],
+                    missedDates: ['2026-02-11', '2026-02-25', '2026-03-18', '2026-03-27', '2026-03-29']
+                },
+                {
+                    code: 'PHY101', name: 'Physics', attended: 32, total: 38,
+                    attendedDates: ['2026-01-07', '2026-01-09', '2026-01-14', '2026-01-16', '2026-01-21', '2026-01-23', '2026-01-28', '2026-01-30', '2026-02-04', '2026-02-06', '2026-02-11', '2026-02-13', '2026-02-18', '2026-02-20', '2026-02-25', '2026-02-27', '2026-03-04', '2026-03-06', '2026-03-11', '2026-03-13', '2026-03-18', '2026-03-20', '2026-03-25', '2026-03-27', '2026-01-10', '2026-01-17', '2026-01-24', '2026-01-31', '2026-02-07', '2026-02-14', '2026-02-21', '2026-02-28'],
+                    missedDates: ['2026-01-12', '2026-01-19', '2026-01-26', '2026-02-09', '2026-03-08', '2026-03-29']
+                }
+            ],
+            'Semester 2': [
+                {
+                    code: 'CSE201', name: 'Data Structures', attended: 40, total: 44,
+                    attendedDates: ['2026-01-05', '2026-01-07', '2026-01-09', '2026-01-12', '2026-01-14', '2026-01-16', '2026-01-19', '2026-01-21', '2026-01-23', '2026-01-26', '2026-01-28', '2026-01-30', '2026-02-02', '2026-02-04', '2026-02-06', '2026-02-09', '2026-02-11', '2026-02-13', '2026-02-16', '2026-02-18', '2026-02-20', '2026-02-23', '2026-02-25', '2026-02-27', '2026-03-02', '2026-03-04', '2026-03-06', '2026-03-09', '2026-03-11', '2026-03-13', '2026-03-16', '2026-03-18', '2026-03-20', '2026-03-23', '2026-03-25', '2026-03-27', '2026-03-30', '2026-04-01', '2026-04-03', '2026-04-06'],
+                    missedDates: ['2026-02-15', '2026-03-08', '2026-03-29', '2026-04-04']
+                }
+            ]
+        };
+
+        function renderAttendance() {
+            const sem = document.getElementById('attendance-sem-select').value;
+            const tbody = document.getElementById('attendance-body');
+            tbody.innerHTML = '';
+
+            const attendance = attendanceData[sem] || [];
+
+            attendance.forEach(subject => {
+                const percentage = ((subject.attended / subject.total) * 100).toFixed(1);
+                const status = percentage >= 75 ? 'Good' : 'Low';
+                const statusClass = percentage >= 75 ? '' : 'status-fail';
+
+                const row = `
+                    <tr>
+                        <td>${subject.code}</td>
+                        <td style="font-weight:600;">${subject.name}</td>
+                        <td>${subject.attended}</td>
+                        <td>${subject.total}</td>
+                        <td class="${statusClass}" style="font-weight:bold;">${percentage}%</td>
+                        <td class="${statusClass}" style="font-weight:600;">${status}</td>
+                        <td>
+                            <button onclick="showAttendanceDetail('${subject.code}', '${subject.name}')" 
+                                style="background:#264508; color:white; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer; font-weight:600;">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function showAttendanceDetail(code, name) {
+            const sem = document.getElementById('attendance-sem-select').value;
+            const subject = attendanceData[sem].find(s => s.code === code);
+
+            if (!subject) return;
+
+            document.getElementById('attendance-overview').classList.add('hidden');
+            document.getElementById('attendance-detail').classList.remove('hidden');
+            document.getElementById('detail-subject-name').innerText = `${code} - ${name}`;
+
+            const attendedContainer = document.getElementById('attended-dates');
+            const missedContainer = document.getElementById('missed-dates');
+
+            attendedContainer.innerHTML = '';
+            missedContainer.innerHTML = '';
+
+            subject.attendedDates.forEach(date => {
+                attendedContainer.innerHTML += `
+                    <div style="background:#F5F0BB; padding:0.7rem 1rem; border-radius:8px; border-left:4px solid #264508;">
+                        <i class="fas fa-check-circle" style="color:#264508; margin-right:0.5rem;"></i>
+                        ${new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </div>
+                `;
+            });
+
+            subject.missedDates.forEach(date => {
+                missedContainer.innerHTML += `
+                    <div style="background:#F5F0BB; padding:0.7rem 1rem; border-radius:8px; border-left:4px solid #ff0000;">
+                        <i class="fas fa-times-circle" style="color:#ff0000; margin-right:0.5rem;"></i>
+                        ${new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </div>
+                `;
+            });
+        }
+
+        function backToAttendanceOverview() {
+            document.getElementById('attendance-detail').classList.add('hidden');
+            document.getElementById('attendance-overview').classList.remove('hidden');
+        }
+
+        // Initialize attendance on page load
+        renderAttendance();
+    </script>
+</body>
+
+</html>

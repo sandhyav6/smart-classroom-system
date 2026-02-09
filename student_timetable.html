@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Timetable - VIT</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Student</span>
+                <span class="role">CSE - B.Tech | CGPA: <span id="cgpa-display">0.0</span></span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="student_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_dashboard.html')"><i class="fas fa-home"></i>
+                Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_attendance.html')"><i
+                    class="fas fa-calendar-alt"></i>
+                Attendance Record</a>
+            <a href="#" class="nav-item active" onclick="navigateTo('student_timetable.html')"><i
+                    class="fas fa-table"></i>
+                Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_assignments.html')"><i class="fas fa-tasks"></i>
+                Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_chat.html')"><i class="fas fa-comments"></i> Chat
+                with
+                Teachers</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_marks.html')"><i class="fas fa-chart-bar"></i>
+                Marks &
+                Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_materials.html')"><i class="fas fa-book"></i>
+                Study
+                Materials</a>
+            <a href="index.html" class="nav-item" style="color: #ff0000;"><i
+                    class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <!-- Timetable View -->
+        <main class="main-content" id="timetable-view" style="display: block; grid-template-columns: 1fr;">
+            <div class="marks-container">
+                <h2>Class Timetable</h2>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Select Semester</label>
+                        <select id="timetable-sem-select" onchange="renderTimetable()">
+                            <option value="Semester 1">Semester 1</option>
+                            <option value="Semester 2">Semester 2</option>
+                            <option value="Semester 3">Semester 3</option>
+                            <option value="Semester 4">Semester 4</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Weekly Timetable Grid -->
+                <div class="timetable-grid" id="timetable-grid">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Detailed Class List -->
+                <div style="margin-top: 3rem;">
+                    <h3 style="margin-bottom: 1.5rem; color: #264508;">Detailed Class Information</h3>
+                    <div id="class-details-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Backend Logic -->
+    <script src="backend.js"></script>
+
+    <script>
+        // --- Initialization ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullname = urlParams.get('fullname') || "Arjun Sharma";
+        const studentData = Backend.getStudent(fullname);
+
+        document.getElementById('profile-name').innerText = fullname;
+        document.getElementById('cgpa-display').innerText = studentData.cgpa;
+
+        // Navigation helper
+        function navigateTo(page) {
+            window.location.href = page + '?fullname=' + encodeURIComponent(fullname);
+        }
+
+        // --- Timetable Logic ---
+        const timetableData = {
+            'Semester 1': {
+                schedule: {
+                    '09:00 - 09:50': { Mon: { code: 'CSE101', name: 'Programming in C', location: 'AB1-201' }, Tue: null, Wed: { code: 'CSE101', name: 'Programming in C', location: 'AB1-201' }, Thu: null, Fri: { code: 'CSE101', name: 'Programming in C', location: 'AB1-201' } },
+                    '10:00 - 10:50': { Mon: { code: 'MAT101', name: 'Calculus', location: 'AB2-105' }, Tue: { code: 'MAT101', name: 'Calculus', location: 'AB2-105' }, Wed: null, Thu: { code: 'MAT101', name: 'Calculus', location: 'AB2-105' }, Fri: null },
+                    '11:00 - 11:50': { Mon: { code: 'PHY101', name: 'Physics', location: 'TB-304' }, Tue: null, Wed: { code: 'PHY101', name: 'Physics', location: 'TB-304' }, Thu: { code: 'PHY101', name: 'Physics', location: 'TB-304' }, Fri: null },
+                    '13:00 - 13:50': { Mon: null, Tue: { code: 'CSE101L', name: 'C Lab', location: 'Lab-105' }, Wed: null, Thu: { code: 'PHY101L', name: 'Physics Lab', location: 'Lab-201' }, Fri: null },
+                    '14:00 - 14:50': { Mon: { code: 'ENG101', name: 'English', location: 'MB-102' }, Tue: null, Wed: { code: 'ENG101', name: 'English', location: 'MB-102' }, Thu: null, Fri: { code: 'ENG101', name: 'English', location: 'MB-102' } },
+                    '15:00 - 15:50': { Mon: null, Tue: { code: 'CSE101L', name: 'C Lab', location: 'Lab-105' }, Wed: null, Thu: { code: 'PHY101L', name: 'Physics Lab', location: 'Lab-201' }, Fri: null }
+                },
+                classes: [
+                    { code: 'CSE101', name: 'Programming in C', faculty: 'Dr. Rajesh Kumar', timings: 'Mon, Wed, Fri: 09:00 - 09:50', location: 'AB1-201' },
+                    { code: 'CSE101L', name: 'C Programming Lab', faculty: 'Prof. Anita Sharma', timings: 'Tue, Thu: 13:00 - 15:50', location: 'Lab-105' },
+                    { code: 'MAT101', name: 'Calculus', faculty: 'Dr. Srinivas Rao', timings: 'Mon, Tue, Thu: 10:00 - 10:50', location: 'AB2-105' },
+                    { code: 'PHY101', name: 'Physics', faculty: 'Dr. Madhavi Reddy', timings: 'Mon, Wed, Thu: 11:00 - 11:50', location: 'TB-304' },
+                    { code: 'PHY101L', name: 'Physics Lab', faculty: 'Dr. Madhavi Reddy', timings: 'Tue, Thu: 13:00 - 15:50', location: 'Lab-201' },
+                    { code: 'ENG101', name: 'English Communication', faculty: 'Prof. Sarah Johnson', timings: 'Mon, Wed, Fri: 14:00 - 14:50', location: 'MB-102' }
+                ]
+            },
+            'Semester 2': {
+                schedule: {
+                    '09:00 - 09:50': { Mon: { code: 'CSE201', name: 'Data Structures', location: 'AB1-305' }, Tue: { code: 'CSE201', name: 'Data Structures', location: 'AB1-305' }, Wed: null, Thu: { code: 'CSE201', name: 'Data Structures', location: 'AB1-305' }, Fri: null },
+                    '10:00 - 10:50': { Mon: null, Tue: { code: 'MAT201', name: 'Linear Algebra', location: 'AB2-201' }, Wed: { code: 'MAT201', name: 'Linear Algebra', location: 'AB2-201' }, Thu: null, Fri: { code: 'MAT201', name: 'Linear Algebra', location: 'AB2-201' } },
+                    '11:00 - 11:50': { Mon: { code: 'CSE202', name: 'Digital Logic', location: 'AB1-401' }, Tue: null, Wed: { code: 'CSE202', name: 'Digital Logic', location: 'AB1-401' }, Thu: { code: 'CSE202', name: 'Digital Logic', location: 'AB1-401' }, Fri: null },
+                    '13:00 - 13:50': { Mon: null, Tue: { code: 'CSE201L', name: 'DS Lab', location: 'Lab-108' }, Wed: null, Thu: null, Fri: { code: 'CSE202L', name: 'DL Lab', location: 'Lab-202' } },
+                    '14:00 - 14:50': { Mon: { code: 'HUM201', name: 'Ethics', location: 'MB-201' }, Tue: null, Wed: { code: 'HUM201', name: 'Ethics', location: 'MB-201' }, Thu: null, Fri: null },
+                    '15:00 - 15:50': { Mon: null, Tue: { code: 'CSE201L', name: 'DS Lab', location: 'Lab-108' }, Wed: null, Thu: null, Fri: { code: 'CSE202L', name: 'DL Lab', location: 'Lab-202' } }
+                },
+                classes: [
+                    { code: 'CSE201', name: 'Data Structures', faculty: 'Dr. Vikram Patel', timings: 'Mon, Tue, Thu: 09:00 - 09:50', location: 'AB1-305' },
+                    { code: 'CSE201L', name: 'Data Structures Lab', faculty: 'Prof. Deepa Singh', timings: 'Tue: 13:00 - 15:50', location: 'Lab-108' },
+                    { code: 'MAT201', name: 'Linear Algebra', faculty: 'Dr. Ramesh Chand', timings: 'Tue, Wed, Fri: 10:00 - 10:50', location: 'AB2-201' },
+                    { code: 'CSE202', name: 'Digital Logic Design', faculty: 'Dr. Priya Menon', timings: 'Mon, Wed, Thu: 11:00 - 11:50', location: 'AB1-401' },
+                    { code: 'CSE202L', name: 'Digital Logic Lab', faculty: 'Prof. Karthik Rao', timings: 'Fri: 13:00 - 15:50', location: 'Lab-202' },
+                    { code: 'HUM201', name: 'Ethics and Values', faculty: 'Dr. Lakshmi Iyengar', timings: 'Mon, Wed: 14:00 - 14:50', location: 'MB-201' }
+                ]
+            }
+        };
+
+        function renderTimetable() {
+            const sem = document.getElementById('timetable-sem-select').value;
+            const data = timetableData[sem];
+
+            if (!data) return;
+
+            const gridContainer = document.getElementById('timetable-grid');
+            const detailsList = document.getElementById('class-details-list');
+
+            // Build timetable grid
+            let gridHTML = '<div class="timetable-header">Time</div>';
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            days.forEach(day => {
+                gridHTML += `<div class="timetable-header">${day}</div>`;
+            });
+
+            // Time slots
+            Object.entries(data.schedule).forEach(([time, slots]) => {
+                gridHTML += `<div class="timetable-time">${time}</div>`;
+
+                days.forEach(day => {
+                    const dayCode = day.substring(0, 3);
+                    const classInfo = slots[dayCode];
+
+                    if (classInfo) {
+                        gridHTML += `
+                            <div class="timetable-cell has-class">
+                                <div class="class-name">${classInfo.name}</div>
+                                <div class="class-code">${classInfo.code}</div>
+                                <div class="class-location"><i class="fas fa-map-marker-alt"></i> ${classInfo.location}</div>
+                            </div>
+                        `;
+                    } else {
+                        gridHTML += '<div class="timetable-cell empty"></div>';
+                    }
+                });
+            });
+
+            gridContainer.innerHTML = gridHTML;
+
+            // Build detailed class list
+            let detailsHTML = '';
+            data.classes.forEach(cls => {
+                detailsHTML += `
+                    <div class="class-detail-card">
+                        <h4>${cls.code} - ${cls.name}</h4>
+                        <div class="detail-row">
+                            <div class="detail-label"><i class="fas fa-chalkboard-teacher"></i> Faculty:</div>
+                            <div class="detail-value">${cls.faculty}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label"><i class="fas fa-clock"></i> Timings:</div>
+                            <div class="detail-value">${cls.timings}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label"><i class="fas fa-map-marker-alt"></i> Location:</div>
+                            <div class="detail-value">${cls.location}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            detailsList.innerHTML = detailsHTML;
+        }
+
+        // Initialize timetable on page load
+        renderTimetable();
+    </script>
+</body>
+
+</html>

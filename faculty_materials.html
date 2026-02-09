@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Materials - VIT</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .module-card {
+            background: var(--glass-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid var(--glass-border);
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .module-card:hover {
+            background: rgba(38, 69, 8, 0.1);
+            border-color: #264508;
+            transform: translateY(-3px);
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .module-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #264508;
+        }
+
+        .material-count {
+            background: rgba(38, 69, 8, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #264508;
+            font-weight: 600;
+        }
+
+        .material-item {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .material-name {
+            font-weight: 600;
+            color: #264508;
+        }
+
+        .material-type {
+            font-size: 0.9rem;
+            color: #264508;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Faculty</span>
+                <span class="role">Faculty - Computer Science</span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="faculty_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_dashboard.html')"><i
+                    class="fas fa-home"></i>
+                Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_attendance.html')"><i
+                    class="fas fa-calendar-alt"></i>
+                Attendance</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_timetable.html')"><i
+                    class="fas fa-table"></i>
+                Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_assignments.html')"><i
+                    class="fas fa-tasks"></i>
+                Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_chat.html')"><i
+                    class="fas fa-comments"></i> Chat
+                with Students</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_marks.html')"><i
+                    class="fas fa-chart-bar"></i>
+                Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item active" onclick="navigateTo('faculty_materials.html')"><i
+                    class="fas fa-book"></i>
+                Upload Materials</a>
+            <a href="index.html" class="nav-item" style="color: #ff0000;"><i
+                    class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" style="display: block; grid-template-columns: 1fr;">
+            <!-- Class Selection View -->
+            <div id="class-selection-view">
+                <div class="marks-container">
+                    <h2 style="color: #264508; margin-bottom: 2rem;">Upload Study Materials</h2>
+
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Select Class</label>
+                            <select id="class-select" onchange="loadModules()">
+                                <option value="">-- Choose a Class --</option>
+                                <option value="CSE-2A">CSE-2A - Data Structures</option>
+                                <option value="CSE-2B">CSE-2B - Algorithms</option>
+                                <option value="CSE-3A">CSE-3A - Database Systems</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modules View -->
+            <div id="modules-view" style="display: none;">
+                <div class="marks-container">
+                    <button onclick="backToClassSelection()"
+                        style="background: #264508; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; margin-bottom: 1.5rem; font-weight: 600;">
+                        <i class="fas fa-arrow-left"></i> Back to Class Selection
+                    </button>
+
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h2 style="color: #264508; margin: 0;">Modules - <span id="selected-class-name"></span></h2>
+                        <button onclick="showCreateModule()"
+                            style="background: linear-gradient(135deg, #264508, #3d6b0f); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 700;">
+                            <i class="fas fa-plus"></i> Create New Module
+                        </button>
+                    </div>
+
+                    <div id="modules-container">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Module View -->
+            <div id="create-module-view" style="display: none;">
+                <div class="marks-container">
+                    <button onclick="backToModules()"
+                        style="background: #264508; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; margin-bottom: 1.5rem; font-weight: 600;">
+                        <i class="fas fa-arrow-left"></i> Back to Modules
+                    </button>
+
+                    <h2 style="color: #264508; margin-bottom: 2rem;">Create New Module</h2>
+
+                    <div
+                        style="background: var(--glass-bg); padding: 2rem; border-radius: 12px; border: 2px solid var(--glass-border);">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #264508;">Module
+                                Name:</label>
+                            <input type="text" id="new-module-name"
+                                placeholder="e.g., Module 1: Introduction to Data Structures"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--glass-border); background: var(--glass-bg); font-size: 1rem; color: #264508;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #264508;">Description:</label>
+                            <textarea id="new-module-description" rows="4"
+                                placeholder="Brief description of the module content"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--glass-border); background: var(--glass-bg); font-size: 1rem; color: #264508; resize: vertical;"></textarea>
+                        </div>
+
+                        <button onclick="createModule()"
+                            style="background: linear-gradient(135deg, #264508, #3d6b0f); color: white; border: none; padding: 1rem 2rem; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 1rem; width: 100%;">
+                            <i class="fas fa-plus-circle"></i> Create Module
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Material View -->
+            <div id="upload-material-view" style="display: none;">
+                <div class="marks-container">
+                    <button onclick="backToModules()"
+                        style="background: #264508; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; margin-bottom: 1.5rem; font-weight: 600;">
+                        <i class="fas fa-arrow-left"></i> Back to Modules
+                    </button>
+
+                    <h2 style="color: #264508; margin-bottom: 1rem;">Upload Material</h2>
+                    <p style="color: #264508; font-size: 1.1rem; margin-bottom: 2rem;">
+                        Module: <strong id="current-module-name"></strong>
+                    </p>
+
+                    <!-- Existing Materials -->
+                    <div
+                        style="background: var(--glass-bg); padding: 1.5rem; border-radius: 12px; border: 2px solid var(--glass-border); margin-bottom: 2rem;">
+                        <h3 style="color: #264508; margin-bottom: 1rem;"><i class="fas fa-list"></i> Existing Materials
+                        </h3>
+                        <div id="existing-materials-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Upload New Material -->
+                    <div
+                        style="background: var(--glass-bg); padding: 2rem; border-radius: 12px; border: 2px solid var(--glass-border);">
+                        <h3 style="color: #264508; margin-bottom: 1.5rem;"><i class="fas fa-upload"></i> Upload New
+                            Material</h3>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #264508;">Material
+                                Title:</label>
+                            <input type="text" id="new-material-title" placeholder="e.g., Lecture Notes - Week 1"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--glass-border); background: var(--glass-bg); font-size: 1rem; color: #264508;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #264508;">Material
+                                Type:</label>
+                            <select id="new-material-type"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--glass-border); background: var(--glass-bg); font-size: 1rem; color: #264508;">
+                                <option value="PDF">PDF</option>
+                                <option value="PPT">PowerPoint</option>
+                                <option value="Video">Video</option>
+                                <option value="Document">Document</option>
+                                <option value="Link">External Link</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #264508;">Upload
+                                File:</label>
+                            <input type="file" id="new-material-file"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--glass-border); background: var(--glass-bg); font-size: 1rem; color: #264508;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #264508;">Description
+                                (Optional):</label>
+                            <textarea id="new-material-description" rows="3"
+                                placeholder="Brief description of the material"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--glass-border); background: var(--glass-bg); font-size: 1rem; color: #264508; resize: vertical;"></textarea>
+                        </div>
+
+                        <button onclick="uploadMaterial()"
+                            style="background: linear-gradient(135deg, #264508, #3d6b0f); color: white; border: none; padding: 1rem 2rem; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 1rem; width: 100%;">
+                            <i class="fas fa-cloud-upload-alt"></i> Upload Material
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Get profile name from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullname = urlParams.get('fullname') || "Dr. Priya Singh";
+        document.getElementById('profile-name').innerText = fullname;
+
+        // Navigation helper
+        function navigateTo(page) {
+            window.location.href = page + '?fullname=' + encodeURIComponent(fullname);
+        }
+
+        // Sample Data
+        const modulesData = {
+            'CSE-2A': [
+                {
+                    id: 1,
+                    name: 'Module 1: Introduction to Data Structures',
+                    description: 'Basic concepts, arrays, and linked lists',
+                    materials: [
+                        { title: 'Lecture Notes - Week 1', type: 'PDF', uploadDate: '2026-01-05' },
+                        { title: 'Introduction PPT', type: 'PPT', uploadDate: '2026-01-05' },
+                        { title: 'Arrays Tutorial Video', type: 'Video', uploadDate: '2026-01-08' }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: 'Module 2: Stacks and Queues',
+                    description: 'Stack operations, queue implementations, and applications',
+                    materials: [
+                        { title: 'Stack Implementation Guide', type: 'PDF', uploadDate: '2026-01-12' },
+                        { title: 'Queue Examples', type: 'Document', uploadDate: '2026-01-15' }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: 'Module 3: Trees and Graphs',
+                    description: 'Binary trees, BST, graph traversals',
+                    materials: [
+                        { title: 'Tree Traversal Notes', type: 'PDF', uploadDate: '2026-01-20' }
+                    ]
+                }
+            ],
+            'CSE-2B': [
+                {
+                    id: 4,
+                    name: 'Module 1: Algorithm Fundamentals',
+                    description: 'Time complexity, Big-O notation, basic algorithms',
+                    materials: [
+                        { title: 'Complexity Analysis Notes', type: 'PDF', uploadDate: '2026-01-06' },
+                        { title: 'Big-O Explained', type: 'Video', uploadDate: '2026-01-08' }
+                    ]
+                },
+                {
+                    id: 5,
+                    name: 'Module 2: Sorting Algorithms',
+                    description: 'Bubble sort, merge sort, quick sort',
+                    materials: [
+                        { title: 'Sorting Algorithms Guide', type: 'PDF', uploadDate: '2026-01-14' }
+                    ]
+                }
+            ],
+            'CSE-3A': [
+                {
+                    id: 6,
+                    name: 'Module 1: Database Fundamentals',
+                    description: 'DBMS concepts, ER diagrams, relational model',
+                    materials: [
+                        { title: 'DBMS Introduction', type: 'PDF', uploadDate: '2026-01-07' },
+                        { title: 'ER Diagram Tutorial', type: 'PPT', uploadDate: '2026-01-10' },
+                        { title: 'Relational Model Lecture', type: 'Video', uploadDate: '2026-01-12' }
+                    ]
+                },
+                {
+                    id: 7,
+                    name: 'Module 2: SQL and Queries',
+                    description: 'SQL syntax, joins, subqueries, aggregations',
+                    materials: [
+                        { title: 'SQL Basics Guide', type: 'PDF', uploadDate: '2026-01-16' },
+                        { title: 'Complex Queries Examples', type: 'Document', uploadDate: '2026-01-19' }
+                    ]
+                }
+            ]
+        };
+
+        let currentClass = '';
+        let currentModule = null;
+
+        // Load modules for selected class
+        function loadModules() {
+            const selectedClass = document.getElementById('class-select').value;
+            if (!selectedClass) return;
+
+            currentClass = selectedClass;
+            document.getElementById('selected-class-name').textContent = selectedClass;
+
+            const modules = modulesData[selectedClass] || [];
+            const container = document.getElementById('modules-container');
+            container.innerHTML = '';
+
+            modules.forEach(module => {
+                const moduleHTML = `
+                    <div class="module-card" onclick="openModule(${module.id})">
+                        <div class="module-header">
+                            <div class="module-title"><i class="fas fa-folder"></i> ${module.name}</div>
+                            <div class="material-count">${module.materials.length} material(s)</div>
+                        </div>
+                        <p style="color: #264508; opacity: 0.8; margin: 0;">${module.description}</p>
+                    </div>
+                `;
+                container.innerHTML += moduleHTML;
+            });
+
+            if (modules.length === 0) {
+                container.innerHTML = '<p style="color: #264508; opacity: 0.7; text-align: center; padding: 2rem;">No modules created yet. Click "Create New Module" to get started.</p>';
+            }
+
+            // Show modules view
+            document.getElementById('class-selection-view').style.display = 'none';
+            document.getElementById('modules-view').style.display = 'block';
+        }
+
+        // Open a module to upload materials
+        function openModule(moduleId) {
+            const modules = modulesData[currentClass];
+            currentModule = modules.find(m => m.id === moduleId);
+            if (!currentModule) return;
+
+            document.getElementById('current-module-name').textContent = currentModule.name;
+
+            // Display existing materials
+            const materialsHTML = currentModule.materials.map(material => `
+                <div class="material-item">
+                    <div>
+                        <div class="material-name"><i class="fas fa-file-${material.type.toLowerCase()}"></i> ${material.title}</div>
+                        <div class="material-type">${material.type} • Uploaded: ${new Date(material.uploadDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                    </div>
+                    <button onclick="deleteMaterial('${material.title}')" style="background: #ff6b6b; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            document.getElementById('existing-materials-list').innerHTML = materialsHTML || '<p style="color: #264508; opacity: 0.7;">No materials uploaded yet.</p>';
+
+            // Show upload material view
+            document.getElementById('modules-view').style.display = 'none';
+            document.getElementById('upload-material-view').style.display = 'block';
+        }
+
+        // Upload new material
+        function uploadMaterial() {
+            const title = document.getElementById('new-material-title').value.trim();
+            const type = document.getElementById('new-material-type').value;
+            const fileInput = document.getElementById('new-material-file');
+
+            if (!title) {
+                alert('Please enter a material title!');
+                return;
+            }
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please select a file to upload!');
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            currentModule.materials.push({
+                title: title,
+                type: type,
+                uploadDate: today
+            });
+
+            // Clear form
+            document.getElementById('new-material-title').value = '';
+            document.getElementById('new-material-description').value = '';
+            fileInput.value = '';
+
+            alert('Material uploaded successfully!');
+
+            // Refresh the materials list
+            openModule(currentModule.id);
+        }
+
+        // Delete material (placeholder)
+        function deleteMaterial(materialTitle) {
+            if (confirm(`Are you sure you want to delete "${materialTitle}"?`)) {
+                currentModule.materials = currentModule.materials.filter(m => m.title !== materialTitle);
+                openModule(currentModule.id);
+            }
+        }
+
+        // Show create module view
+        function showCreateModule() {
+            document.getElementById('modules-view').style.display = 'none';
+            document.getElementById('create-module-view').style.display = 'block';
+        }
+
+        // Create new module
+        function createModule() {
+            const name = document.getElementById('new-module-name').value.trim();
+            const description = document.getElementById('new-module-description').value.trim();
+
+            if (!name || !description) {
+                alert('Please fill in all fields!');
+                return;
+            }
+
+            const newId = Math.max(...Object.values(modulesData).flat().map(m => m.id)) + 1;
+            if (!modulesData[currentClass]) {
+                modulesData[currentClass] = [];
+            }
+
+            modulesData[currentClass].push({
+                id: newId,
+                name: name,
+                description: description,
+                materials: []
+            });
+
+            // Clear form
+            document.getElementById('new-module-name').value = '';
+            document.getElementById('new-module-description').value = '';
+
+            alert('Module created successfully!');
+            backToModules();
+            loadModules();
+        }
+
+        // Navigation functions
+        function backToModules() {
+            document.getElementById('create-module-view').style.display = 'none';
+            document.getElementById('upload-material-view').style.display = 'none';
+            document.getElementById('modules-view').style.display = 'block';
+            currentModule = null;
+        }
+
+        function backToClassSelection() {
+            document.getElementById('modules-view').style.display = 'none';
+            document.getElementById('class-selection-view').style.display = 'block';
+            document.getElementById('class-select').value = '';
+            currentClass = '';
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignments - VIT Faculty</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Faculty</span>
+                <span class="role">Faculty - Computer Science</span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="faculty_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_dashboard.html')"><i
+                    class="fas fa-home"></i>
+                Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_attendance.html')"><i
+                    class="fas fa-calendar-alt"></i>
+                Attendance</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_timetable.html')"><i
+                    class="fas fa-table"></i>
+                Timetable</a>
+            <a href="javascript:void(0)" class="nav-item active" onclick="navigateTo('faculty_assignments.html')"><i
+                    class="fas fa-tasks"></i>
+                Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_chat.html')"><i
+                    class="fas fa-comments"></i> Chat
+                with
+                Students</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_marks.html')"><i
+                    class="fas fa-chart-bar"></i>
+                Marks &
+                Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_materials.html')"><i
+                    class="fas fa-book"></i>
+                Upload
+                Materials</a>
+            <a href="index.html" class="nav-item" style="color: #ff0000;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" style="display: block; grid-template-columns: 1fr;">
+            <!-- Assignments List View -->
+            <div id="assignments-list-view">
+                <div class="marks-container">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h2 style="color: #264508; margin: 0;">Manage Assignments</h2>
+                        <button id="create-assignment-btn" onclick="showCreateAssignment()"
+                            style="display: none; background: linear-gradient(135deg, #264508, #3d6b0f); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 1rem;">
+                            <i class="fas fa-plus"></i> Create New Assignment
+                        </button>
+                    </div>
+
+                    <!-- Class Selection -->
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Select Class</label>
+                            <select id="class-select" onchange="renderAssignments()">
+                                <option value="">-- Select a Class --</option>
+                                <option value="CSE-2A">CSE-2A - Data Structures</option>
+                                <option value="CSE-2B">CSE-2B - Algorithms</option>
+                                <option value="CSE-3A">CSE-3A - Database Systems</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Assignments Table -->
+                    <div class="table-wrapper" id="assignments-table" style="margin-top: 2rem; display: none;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Assignment Title</th>
+                                    <th>Due Date</th>
+                                    <th>Submitted</th>
+                                    <th>Not Submitted</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assignments-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignment Detail View -->
+            <div id="assignment-detail-view" style="display: none;">
+                <div class="marks-container">
+                    <button onclick="backToList()"
+                        style="background: #264508; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; margin-bottom: 1.5rem; font-weight: 600;">
+                        <i class="fas fa-arrow-left"></i> Back to Assignments
+                    </button>
+
+                    <h2 id="detail-title" style="color: #264508; margin-bottom: 1rem;"></h2>
+
+                    <div
+                        style="background: var(--glass-bg); padding: 1.5rem; border-radius: 12px; border: 2px solid var(--glass-border); margin-bottom: 2rem;">
+                        <div
+                            style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <div style="font-weight: 600; color: #264508; margin-bottom: 0.5rem;"><i
+                                        class="fas fa-calendar-alt"></i> Due Date:</div>
+                                <div id="detail-due-date" style="color: #264508;"></div>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #264508; margin-bottom: 0.5rem;"><i
+                                        class="fas fa-users"></i> Total Students:</div>
+                                <div id="detail-total-students" style="color: #264508;"></div>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #264508; margin-bottom: 0.5rem;"><i
+                                        class="fas fa-check-circle"></i> Submission Rate:</div>
+                                <div id="detail-submission-rate" style="color: #264508; font-weight: 700;"></div>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 2px solid var(--glass-border); padding-top: 1.5rem;">
+                            <h4 style="color: #264508; margin-bottom: 0.5rem;">Assignment Description:</h4>
+                            <p id="detail-description" style="color: #264508; line-height: 1.6;"></p>
+                        </div>
+                    </div>
+
+                    <!-- Submission Statistics -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                        <div
+                            style="background: rgba(40, 167, 69, 0.1); padding: 1.5rem; border-radius: 12px; border-left: 4px solid #28a745;">
+                            <h3 style="color: #28a745; margin-bottom: 1rem;"><i class="fas fa-check"></i> Submitted
+                                (<span id="submitted-count">0</span>)</h3>
+                            <div id="submitted-list" style="max-height: 300px; overflow-y: auto;"></div>
+                        </div>
+                        <div
+                            style="background: rgba(255, 107, 107, 0.1); padding: 1.5rem; border-radius: 12px; border-left: 4px solid #ff6b6b;">
+                            <h3 style="color: #ff6b6b; margin-bottom: 1rem;"><i class="fas fa-times"></i> Not Submitted
+                                (<span id="not-submitted-count">0</span>)</h3>
+                            <div id="not-submitted-list" style="max-height: 300px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Assignment View -->
+            <div id="create-assignment-view" style="display: none;">
+                <div class="marks-container">
+                    <button onclick="backToList()"
+                        style="background: #264508; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; margin-bottom: 1.5rem; font-weight: 600;">
+                        <i class="fas fa-arrow-left"></i> Back to Assignments
+                    </button>
+
+                    <h2 style="color: #264508; margin-bottom: 2rem;">Create New Assignment</h2>
+
+                    <div
+                        style="background: var(--glass-bg); padding: 2rem; border-radius: 12px; border: 2px solid var(--glass-border);">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #264508;">Assignment
+                                Title:</label>
+                            <input type="text" id="new-assignment-title" placeholder="Enter assignment title"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--glass-border); background: var(--glass-bg); font-size: 1rem; color: #264508;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #264508;">Select
+                                Class:</label>
+                            <select id="new-assignment-class"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--glass-border); background: var(--glass-bg); font-size: 1rem; color: #264508;">
+                                <option value="CSE-2A">CSE-2A - Data Structures</option>
+                                <option value="CSE-2B">CSE-2B - Algorithms</option>
+                                <option value="CSE-3A">CSE-3A - Database Systems</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #264508;">Due
+                                Date:</label>
+                            <input type="date" id="new-assignment-due-date"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--glass-border); background: var(--glass-bg); font-size: 1rem; color: #264508;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #264508;">Description:</label>
+                            <textarea id="new-assignment-description" rows="6"
+                                placeholder="Enter assignment description and requirements"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--glass-border); background: var(--glass-bg); font-size: 1rem; color: #264508; resize: vertical;"></textarea>
+                        </div>
+
+                        <button onclick="createAssignment()"
+                            style="background: linear-gradient(135deg, #264508, #3d6b0f); color: white; border: none; padding: 1rem 2rem; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 1rem; width: 100%;">
+                            <i class="fas fa-plus-circle"></i> Create Assignment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Get profile name from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullname = urlParams.get('fullname') || "Dr. Priya Singh";
+        document.getElementById('profile-name').innerText = fullname;
+
+        // Navigation helper
+        function navigateTo(page) {
+            window.location.href = page + '?fullname=' + encodeURIComponent(fullname);
+        }
+
+        // Sample Data
+        const classStudents = {
+            'CSE-2A': [
+                { roll: '21BCE0001', name: 'Arjun Sharma' },
+                { roll: '21BCE0002', name: 'Priya Patel' },
+                { roll: '21BCE0003', name: 'Rahul Kumar' },
+                { roll: '21BCE0004', name: 'Sneha Reddy' },
+                { roll: '21BCE0005', name: 'Vikram Singh' },
+                { roll: '21BCE0006', name: 'Ananya Menon' },
+                { roll: '21BCE0007', name: 'Karthik Iyer' },
+                { roll: '21BCE0008', name: 'Divya Nair' }
+            ],
+            'CSE-2B': [
+                { roll: '21BCE0011', name: 'Rohan Gupta' },
+                { roll: '21BCE0012', name: 'Kavya Pillai' },
+                { roll: '21BCE0013', name: 'Aditya Verma' },
+                { roll: '21BCE0014', name: 'Meera Krishnan' },
+                { roll: '21BCE0015', name: 'Siddharth Rao' },
+                { roll: '21BCE0016', name: 'Ishita Sharma' },
+                { roll: '21BCE0017', name: 'Aryan Joshi' },
+                { roll: '21BCE0018', name: 'Simran Kaur' }
+            ],
+            'CSE-3A': [
+                { roll: '20BCE0001', name: 'Aditya Verma' },
+                { roll: '20BCE0002', name: 'Meera Krishnan' },
+                { roll: '20BCE0003', name: 'Siddharth Rao' },
+                { roll: '20BCE0004', name: 'Ishita Sharma' },
+                { roll: '20BCE0005', name: 'Aryan Joshi' },
+                { roll: '20BCE0006', name: 'Tanya Singh' },
+                { roll: '20BCE0007', name: 'Nikhil Desai' },
+                { roll: '20BCE0008', name: 'Pooja Reddy' }
+            ]
+        };
+
+        const assignmentsData = {
+            'CSE-2A': [
+                {
+                    id: 1,
+                    title: 'Binary Search Tree Implementation',
+                    dueDate: '2026-02-10',
+                    description: 'Implement a complete binary search tree with insertion, deletion, and traversal operations in C programming language.',
+                    submitted: ['21BCE0001', '21BCE0002', '21BCE0005', '21BCE0006', '21BCE0007']
+                },
+                {
+                    id: 2,
+                    title: 'Linked List Operations',
+                    dueDate: '2026-02-15',
+                    description: 'Create a program to perform insertion, deletion, and reversal operations on a singly linked list.',
+                    submitted: ['21BCE0001', '21BCE0003', '21BCE0004']
+                },
+                {
+                    id: 3,
+                    title: 'Sorting Algorithms Comparison',
+                    dueDate: '2026-02-20',
+                    description: 'Implement and compare the time complexity of Bubble Sort, Quick Sort, and Merge Sort.',
+                    submitted: []
+                }
+            ],
+            'CSE-2B': [
+                {
+                    id: 4,
+                    title: 'Dynamic Programming Problems',
+                    dueDate: '2026-02-12',
+                    description: 'Solve the provided set of dynamic programming problems including Fibonacci, Knapsack, and LCS.',
+                    submitted: ['21BCE0011', '21BCE0012', '21BCE0013', '21BCE0015', '21BCE0016', '21BCE0018']
+                },
+                {
+                    id: 5,
+                    title: 'Graph Algorithms',
+                    dueDate: '2026-02-18',
+                    description: 'Implement BFS, DFS, and Dijkstra\'s shortest path algorithm.',
+                    submitted: ['21BCE0011', '21BCE0014']
+                }
+            ],
+            'CSE-3A': [
+                {
+                    id: 6,
+                    title: 'Database Normalization Exercise',
+                    dueDate: '2026-02-08',
+                    description: 'Normalize the given database schema to 3NF and create ER diagrams.',
+                    submitted: ['20BCE0001', '20BCE0002', '20BCE0003', '20BCE0004', '20BCE0006', '20BCE0007', '20BCE0008']
+                },
+                {
+                    id: 7,
+                    title: 'SQL Query Assignment',
+                    dueDate: '2026-02-14',
+                    description: 'Write complex SQL queries including joins, subqueries, and aggregations.',
+                    submitted: ['20BCE0001', '20BCE0005', '20BCE0006']
+                },
+                {
+                    id: 8,
+                    title: 'Database Design Project',
+                    dueDate: '2026-02-25',
+                    description: 'Design a complete database system for a library management application.',
+                    submitted: ['20BCE0002']
+                }
+            ]
+        };
+
+        let currentAssignment = null;
+
+        // Render assignments for selected class
+        function renderAssignments() {
+            const selectedClass = document.getElementById('class-select').value;
+            const tbody = document.getElementById('assignments-tbody');
+            const tableWrapper = document.getElementById('assignments-table');
+            tbody.innerHTML = '';
+
+            if (!selectedClass) {
+                tableWrapper.style.display = 'none';
+                document.getElementById('create-assignment-btn').style.display = 'none';
+                return;
+            }
+
+            tableWrapper.style.display = 'block';
+            document.getElementById('create-assignment-btn').style.display = 'block';
+            const assignments = assignmentsData[selectedClass] || [];
+            const students = classStudents[selectedClass] || [];
+
+            assignments.forEach(assignment => {
+                const totalStudents = students.length;
+                const submittedCount = assignment.submitted.length;
+                const notSubmittedCount = totalStudents - submittedCount;
+
+                const row = `
+                    <tr>
+                        <td style="font-weight: 600; color: #264508;">${assignment.title}</td>
+                        <td>${new Date(assignment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                        <td style="color: #28a745; font-weight: 700;">${submittedCount}</td>
+                        <td style="color: #ff6b6b; font-weight: 700;">${notSubmittedCount}</td>
+                        <td>
+                            <button onclick="showAssignmentDetail(${assignment.id}, '${selectedClass}')" style="background: #264508; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            if (assignments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #264508; opacity: 0.7;">No assignments for this class</td></tr>';
+            }
+        }
+
+        // Show assignment detail
+        function showAssignmentDetail(assignmentId, className) {
+            const assignments = assignmentsData[className];
+            currentAssignment = assignments.find(a => a.id === assignmentId);
+            if (!currentAssignment) return;
+
+            const students = classStudents[className];
+            const submittedStudents = students.filter(s => currentAssignment.submitted.includes(s.roll));
+            const notSubmittedStudents = students.filter(s => !currentAssignment.submitted.includes(s.roll));
+
+            // Update detail view
+            document.getElementById('detail-title').textContent = currentAssignment.title;
+            document.getElementById('detail-due-date').textContent = new Date(currentAssignment.dueDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            document.getElementById('detail-total-students').textContent = students.length;
+            document.getElementById('detail-submission-rate').textContent = `${submittedStudents.length}/${students.length} (${Math.round((submittedStudents.length / students.length) * 100)}%)`;
+            document.getElementById('detail-description').textContent = currentAssignment.description;
+
+            // Update counts
+            document.getElementById('submitted-count').textContent = submittedStudents.length;
+            document.getElementById('not-submitted-count').textContent = notSubmittedStudents.length;
+
+            // Render submitted list
+            const submittedHTML = submittedStudents.map(s => `
+                <div style="background: rgba(255, 255, 255, 0.5); padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                    <div style="font-weight: 600; color: #264508;">${s.name}</div>
+                    <div style="font-size: 0.9rem; color: #264508; opacity: 0.8;">${s.roll}</div>
+                </div>
+            `).join('');
+            document.getElementById('submitted-list').innerHTML = submittedHTML || '<p style="color: #264508; opacity: 0.7;">No submissions yet</p>';
+
+            // Render not submitted list
+            const notSubmittedHTML = notSubmittedStudents.map(s => `
+                <div style="background: rgba(255, 255, 255, 0.5); padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                    <div style="font-weight: 600; color: #264508;">${s.name}</div>
+                    <div style="font-size: 0.9rem; color: #264508; opacity: 0.8;">${s.roll}</div>
+                </div>
+            `).join('');
+            document.getElementById('not-submitted-list').innerHTML = notSubmittedHTML || '<p style="color: #264508; opacity: 0.7;">All students submitted</p>';
+
+            // Show detail view
+            document.getElementById('assignments-list-view').style.display = 'none';
+            document.getElementById('assignment-detail-view').style.display = 'block';
+        }
+
+        // Show create assignment view
+        function showCreateAssignment() {
+            document.getElementById('assignments-list-view').style.display = 'none';
+            document.getElementById('create-assignment-view').style.display = 'block';
+
+            // Set default due date to 7 days from now
+            const defaultDate = new Date();
+            defaultDate.setDate(defaultDate.getDate() + 7);
+            document.getElementById('new-assignment-due-date').value = defaultDate.toISOString().split('T')[0];
+        }
+
+        // Create new assignment
+        function createAssignment() {
+            const title = document.getElementById('new-assignment-title').value.trim();
+            const className = document.getElementById('new-assignment-class').value;
+            const dueDate = document.getElementById('new-assignment-due-date').value;
+            const description = document.getElementById('new-assignment-description').value.trim();
+
+            if (!title || !dueDate || !description) {
+                alert('Please fill in all fields!');
+                return;
+            }
+
+            // Add new assignment to data
+            const newId = Math.max(...Object.values(assignmentsData).flat().map(a => a.id)) + 1;
+            if (!assignmentsData[className]) {
+                assignmentsData[className] = [];
+            }
+
+            assignmentsData[className].push({
+                id: newId,
+                title: title,
+                dueDate: dueDate,
+                description: description,
+                submitted: []
+            });
+
+            // Clear form
+            document.getElementById('new-assignment-title').value = '';
+            document.getElementById('new-assignment-description').value = '';
+
+            alert('Assignment created successfully!');
+            backToList();
+
+            // Update the class select and render
+            document.getElementById('class-select').value = className;
+            renderAssignments();
+        }
+
+        // Back to list
+        function backToList() {
+            document.getElementById('assignments-list-view').style.display = 'block';
+            document.getElementById('assignment-detail-view').style.display = 'none';
+            document.getElementById('create-assignment-view').style.display = 'none';
+        }
+
+        // Don't render initially - wait for class selection
+    </script>
+</body>
+
+</html>

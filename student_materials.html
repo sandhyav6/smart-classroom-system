@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Materials - VIT</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Student</span>
+                <span class="role">CSE - B.Tech | CGPA: <span id="cgpa-display">0.0</span></span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="student_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_dashboard.html')"><i
+                    class="fas fa-home"></i>
+                Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_attendance.html')"><i
+                    class="fas fa-calendar-alt"></i>
+                Attendance Record</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_timetable.html')"><i
+                    class="fas fa-table"></i>
+                Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_assignments.html')"><i
+                    class="fas fa-tasks"></i>
+                Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_chat.html')"><i
+                    class="fas fa-comments"></i> Chat
+                with
+                Teachers</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_marks.html')"><i
+                    class="fas fa-chart-bar"></i>
+                Marks &
+                Results</a>
+            <a href="#" class="nav-item active" onclick="navigateTo('student_materials.html')"><i
+                    class="fas fa-book"></i> Study
+                Materials</a>
+            <a href="index.html" class="nav-item" style="color: #ff0000;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <!-- Study Materials View -->
+        <main class="main-content" id="materials-view" style="display: block; grid-template-columns: 1fr;">
+            <div class="marks-container">
+                <!-- Back Buttons -->
+                <div id="back-buttons-container" style="margin-bottom: 1rem;">
+                    <!-- Populated by JS -->
+                </div>
+
+                <h2>Study Materials & Resources</h2>
+
+
+                <div id="mat-grid" class="teacher-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Backend Logic -->
+    <script src="backend.js"></script>
+
+    <script>
+        // --- Initialization ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullname = urlParams.get('fullname') || "Arjun Sharma";
+        const studentData = Backend.getStudent(fullname);
+
+        document.getElementById('profile-name').innerText = fullname;
+        document.getElementById('cgpa-display').innerText = studentData.cgpa;
+
+        // Navigation helper
+        function navigateTo(page) {
+            window.location.href = page + '?fullname=' + encodeURIComponent(fullname);
+        }
+
+        // --- Study Materials Logic ---
+        let currentLevel = 'subject';
+        let selSubject = '';
+        let selModule = '';
+
+        // Subject to Materials mapping
+        const subjectMaterials = {
+            'Programming in C': ['Module 1: Introduction to C', 'Module 2: Control Structures', 'Module 3: Functions', 'Module 4: Arrays & Pointers', 'Module 5: Structures'],
+            'Calculus': ['Module 1: Limits & Continuity', 'Module 2: Differentiation', 'Module 3: Integration', 'Module 4: Applications', 'Module 5: Sequences & Series'],
+            'Physics': ['Module 1: Mechanics', 'Module 2: Thermodynamics', 'Module 3: Waves', 'Module 4: Optics', 'Module 5: Electromagnetism'],
+            'Data Structures': ['Module 1: Arrays & Linked Lists', 'Module 2: Stacks & Queues', 'Module 3: Trees', 'Module 4: Graphs', 'Module 5: Hashing'],
+            'Linear Algebra': ['Module 1: Matrices', 'Module 2: Vector Spaces', 'Module 3: Eigenvalues', 'Module 4: Linear Transformations', 'Module 5: Applications'],
+            'Digital Logic Design': ['Module 1: Number Systems', 'Module 2: Boolean Algebra', 'Module 3: Combinational Circuits', 'Module 4: Sequential Circuits', 'Module 5: Memory'],
+            'English Communication': ['Module 1: Grammar Basics', 'Module 2: Writing Skills', 'Module 3: Presentation Skills', 'Module 4: Professional Communication', 'Module 5: Technical Writing'],
+            'Ethics and Values': ['Module 1: Moral Philosophy', 'Module 2: Professional Ethics', 'Module 3: Case Studies', 'Module 4: Social Responsibility', 'Module 5: Values in Technology']
+        };
+
+        function renderMaterials() {
+            const grid = document.getElementById('mat-grid');
+            const backContainer = document.getElementById('back-buttons-container');
+            grid.innerHTML = '';
+            backContainer.innerHTML = '';
+
+            if (currentLevel === 'subject') {
+                const subjects = Object.keys(subjectMaterials);
+                subjects.forEach(subject => {
+                    grid.innerHTML += `
+                        <div class="teacher-card" onclick="selectSubject('${subject}')" style="word-wrap: break-word; overflow-wrap: break-word;">
+                            <i class="fas fa-book" style="font-size:3rem; margin-bottom:1rem; color:#264508;"></i>
+                            <h3 style="font-size:1.1rem; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">${subject}</h3>
+                        </div>
+                    `;
+                });
+            } else if (currentLevel === 'module') {
+                // Show Back to Subjects button
+                backContainer.innerHTML = `
+                    <button onclick="resetMaterials()" style="background: #264508; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem;">
+                        <i class="fas fa-arrow-left"></i> Back to Subjects
+                    </button>
+                `;
+                const modules = subjectMaterials[selSubject];
+                modules.forEach(module => {
+                    grid.innerHTML += `
+                         <div class="teacher-card" onclick="selectModule('${module}')" style="word-wrap: break-word; overflow-wrap: break-word;">
+                            <i class="fas fa-folder-open" style="font-size:3rem; margin-bottom:1rem; color:#4a7c59;"></i>
+                            <h3 style="font-size:1rem; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">${module}</h3>
+                        </div>
+                    `;
+                });
+            } else if (currentLevel === 'files') {
+                // Show Back to Modules button
+                backContainer.innerHTML = `
+                    <button onclick="selectSubject('${selSubject}')" style="background: #264508; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem;">
+                        <i class="fas fa-arrow-left"></i> Back to Modules
+                    </button>
+                `;
+                const files = [
+                    { name: 'Lecture Notes.pdf', type: 'pdf' },
+                    { name: 'Practice Problems.pdf', type: 'pdf' },
+                    { name: 'Additional Reading.pdf', type: 'pdf' },
+                    { name: 'Video Tutorial Link.txt', type: 'txt' }
+                ];
+                files.forEach(f => {
+                    grid.innerHTML += `
+                         <div class="teacher-card" style="cursor:default; word-wrap: break-word; overflow-wrap: break-word;">
+                            <i class="fas fa-file-${f.type === 'pdf' ? 'pdf' : 'alt'}" style="font-size:3rem; margin-bottom:1rem; color:${f.type === 'pdf' ? '#ff6b6b' : '#4ecdc4'}"></i>
+                            <h3 style="font-size:0.95rem; margin-bottom:0.5rem; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;">${f.name}</h3>
+                            <button style="background:#264508; color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:600;">Download</button>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function resetMaterials() { currentLevel = 'subject'; renderMaterials(); }
+        function selectSubject(s) { selSubject = s; currentLevel = 'module'; renderMaterials(); }
+        function selectModule(m) { selModule = m; currentLevel = 'files'; renderMaterials(); }
+
+        // Initial Render
+        renderMaterials();
+    </script>
+</body>
+
+</html>

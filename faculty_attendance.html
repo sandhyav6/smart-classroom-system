@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - VIT</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Faculty</span>
+                <span class="role">Faculty - Computer Science</span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="faculty_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_dashboard.html')"><i
+                    class="fas fa-home"></i>
+                Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item active" onclick="navigateTo('faculty_attendance.html')"><i
+                    class="fas fa-calendar-alt"></i>
+                Attendance</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_timetable.html')"><i
+                    class="fas fa-table"></i>
+                Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_assignments.html')"><i
+                    class="fas fa-tasks"></i>
+                Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_chat.html')"><i
+                    class="fas fa-comments"></i> Chat
+                with
+                Students</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_marks.html')"><i
+                    class="fas fa-chart-bar"></i>
+                Marks &
+                Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_materials.html')"><i
+                    class="fas fa-book"></i>
+                Upload
+                Materials</a>
+            <a href="index.html" class="nav-item" style="color: #ff0000;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <!-- Attendance View -->
+        <main class="main-content" id="attendance-view" style="display: block; grid-template-columns: 1fr;">
+            <div class="marks-container">
+                <h2>Mark Attendance</h2>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Select Class</label>
+                        <select id="class-select" onchange="renderStudents()">
+                            <option value="">-- Select a Class --</option>
+                            <option value="CSE-2A">CSE-2A - Data Structures</option>
+                            <option value="CSE-2B">CSE-2B - Algorithms</option>
+                            <option value="CSE-3A">CSE-3A - Database Systems</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date</label>
+                        <input type="date" id="attendance-date"
+                            style="padding: 0.8rem 1.5rem; border-radius: 12px; border: 2px solid rgba(38, 69, 8, 0.2); background: rgba(255, 255, 255, 0.3); color: #264508; font-size: 1rem; font-weight: 600;">
+                    </div>
+                </div>
+                <div class="table-wrapper" id="attendance-table" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Roll No</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-body"></tbody>
+                    </table>
+                </div>
+                <button id="submit-btn" onclick="submitAttendance()"
+                    style="display: none; background:#264508; color:white; border:none; padding:1rem 2rem; border-radius:12px; cursor:pointer; font-weight:700; margin-top:2rem;">
+                    <i class="fas fa-save"></i> Submit Attendance
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Initialization ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullname = urlParams.get('fullname') || "Dr. Priya Singh";
+        document.getElementById('profile-name').innerText = fullname;
+
+        // Set default date to today
+        document.getElementById('attendance-date').valueAsDate = new Date();
+
+        // Navigation helper
+        function navigateTo(page) {
+            window.location.href = page + '?fullname=' + encodeURIComponent(fullname);
+        }
+        // --- Student Data ---
+        const classData = {
+            'CSE-2A': [
+                { roll: '21BCE0001', name: 'Arjun Sharma', present: true },
+                { roll: '21BCE0002', name: 'Priya Patel', present: true },
+                { roll: '21BCE0003', name: 'Rahul Kumar', present: false },
+                { roll: '21BCE0004', name: 'Sneha Reddy', present: true },
+                { roll: '21BCE0005', name: 'Vikram Singh', present: true }
+            ],
+            'CSE-2B': [
+                { roll: '21BCE0011', name: 'Ananya Iyer', present: true },
+                { roll: '21BCE0012', name: 'Karthik Menon', present: true },
+                { roll: '21BCE0013', name: 'Divya Nair', present: true },
+                { roll: '21BCE0014', name: 'Rohan Gupta', present: false },
+                { roll: '21BCE0015', name: 'Kavya Pillai', present: true }
+            ],
+            'CSE-3A': [
+                { roll: '20BCE0001', name: 'Aditya Verma', present: true },
+                { roll: '20BCE0002', name: 'Meera Krishnan', present: true },
+                { roll: '20BCE0003', name: 'Siddharth Rao', present: true },
+                { roll: '20BCE0004', name: 'Ishita Sharma', present: false },
+                { roll: '20BCE0005', name: 'Aryan Joshi', present: true }
+            ]
+        };
+
+        function renderStudents() {
+            const classSelected = document.getElementById('class-select').value;
+            const tbody = document.getElementById('students-body');
+            const tableWrapper = document.getElementById('attendance-table');
+            tbody.innerHTML = '';
+
+            if (!classSelected) {
+                tableWrapper.style.display = 'none';
+                document.getElementById('submit-btn').style.display = 'none';
+                return;
+            }
+
+            tableWrapper.style.display = 'block';
+            document.getElementById('submit-btn').style.display = 'block';
+            const students = classData[classSelected] || [];
+
+            students.forEach((student, index) => {
+                const statusClass = student.present ? '' : 'status-fail';
+                const statusText = student.present ? 'Present' : 'Absent';
+                const row = `
+                    <tr>
+                        <td>${student.roll}</td>
+                        <td style="font-weight:600;">${student.name}</td>
+                        <td class="${statusClass}" id="status-${index}">${statusText}</td>
+                        <td>
+                            <button onclick="toggleAttendance(${index})" 
+                                style="background:#264508; color:white; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer; font-weight:600;">
+                                Toggle
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function toggleAttendance(index) {
+            const classSelected = document.getElementById('class-select').value;
+            classData[classSelected][index].present = !classData[classSelected][index].present;
+            renderStudents();
+        }
+
+        function submitAttendance() {
+            const classSelected = document.getElementById('class-select').value;
+            const date = document.getElementById('attendance-date').value;
+            alert(`Attendance submitted successfully for ${classSelected} on ${date}!`);
+        }
+
+        // Don't render initially - wait for class selection
+    </script>
+</body>
+
+</html>

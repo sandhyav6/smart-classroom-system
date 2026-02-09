@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marks & Results - VIT</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Student</span>
+                <span class="role">CSE - B.Tech | CGPA: <span id="cgpa-display">0.0</span></span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="student_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_dashboard.html')"><i
+                    class="fas fa-home"></i>
+                Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_attendance.html')"><i
+                    class="fas fa-calendar-alt"></i>
+                Attendance Record</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_timetable.html')"><i
+                    class="fas fa-table"></i>
+                Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_assignments.html')"><i
+                    class="fas fa-tasks"></i>
+                Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_chat.html')"><i
+                    class="fas fa-comments"></i> Chat
+                with
+                Teachers</a>
+            <a href="#" class="nav-item active" onclick="navigateTo('student_marks.html')"><i
+                    class="fas fa-chart-bar"></i> Marks &
+                Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('student_materials.html')"><i
+                    class="fas fa-book"></i>
+                Study
+                Materials</a>
+            <a href="index.html" class="nav-item" style="color: #ff0000;"><i
+                    class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <!-- Marks & Results View -->
+        <main class="main-content" id="marks-view" style="display: block; grid-template-columns: 1fr;">
+            <div class="marks-container">
+                <h2>Marks & Results</h2>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Select Semester</label>
+                        <select id="sem-select" onchange="renderMarks()">
+                            <option value="Semester 1">Semester 1</option>
+                            <option value="Semester 2">Semester 2</option>
+                            <option value="Semester 3">Semester 3</option>
+                            <option value="Semester 4">Semester 4</option>
+                            <option value="Semester 5">Semester 5</option>
+                            <option value="Semester 6">Semester 6</option>
+                            <option value="Semester 7">Semester 7</option>
+                            <option value="Semester 8">Semester 8</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Subject</th>
+                                <th>DA1</th>
+                                <th>DA2</th>
+                                <th>DA3</th>
+                                <th>CAT1</th>
+                                <th>CAT2</th>
+                                <th>FAT</th>
+                                <th>Total</th>
+                                <th>Grade</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marks-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Backend Logic -->
+    <script src="backend.js"></script>
+
+    <script>
+        // --- Initialization ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullname = urlParams.get('fullname') || "Arjun Sharma";
+        const studentData = Backend.getStudent(fullname);
+
+        document.getElementById('profile-name').innerText = fullname;
+        document.getElementById('cgpa-display').innerText = studentData.cgpa;
+
+        // Navigation helper
+        function navigateTo(page) {
+            window.location.href = page + '?fullname=' + encodeURIComponent(fullname);
+        }
+
+        // --- Marks Logic ---
+        function renderMarks() {
+            const sem = document.getElementById('sem-select').value;
+            const tbody = document.getElementById('marks-body');
+            tbody.innerHTML = '';
+
+            const marks = studentData.marks[sem] || [];
+
+            if (marks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No records found.</td></tr>';
+                return;
+            }
+
+            marks.forEach(m => {
+                const statusClass = (m.grade === 'F' || m.grade === 'N') ? 'status-fail' : '';
+                const row = `
+                    <tr>
+                        <td>${m.code}</td>
+                        <td style="font-weight:600;">${m.name}</td>
+                        <td>${m.da1}</td>
+                        <td>${m.da2}</td>
+                        <td>${m.da3}</td>
+                        <td class="${m.status === 'Fail' ? 'status-fail' : ''}">${m.cat1}</td>
+                        <td>${m.cat2}</td>
+                        <td>${m.fat}</td>
+                        <td class="${statusClass}">${m.total}</td>
+                        <td class="${statusClass}" style="font-weight:bold;">${m.grade}</td>
+                        <td class="${statusClass}">${m.remarks}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+        renderMarks();
+    </script>
+</body>
+
+</html>

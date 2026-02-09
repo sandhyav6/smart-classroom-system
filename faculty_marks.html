@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marks & Results - VIT</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Faculty</span>
+                <span class="role">Faculty - Computer Science</span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="faculty_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_dashboard.html')"><i
+                    class="fas fa-home"></i>
+                Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_attendance.html')"><i
+                    class="fas fa-calendar-alt"></i>
+                Attendance</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_timetable.html')"><i
+                    class="fas fa-table"></i>
+                Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_assignments.html')"><i
+                    class="fas fa-tasks"></i>
+                Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_chat.html')"><i
+                    class="fas fa-comments"></i> Chat
+                with Students</a>
+            <a href="javascript:void(0)" class="nav-item active" onclick="navigateTo('faculty_marks.html')"><i
+                    class="fas fa-chart-bar"></i>
+                Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="navigateTo('faculty_materials.html')"><i
+                    class="fas fa-book"></i>
+                Upload Materials</a>
+            <a href="index.html" class="nav-item" style="color: #ff0000;"><i
+                    class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" style="display: block; grid-template-columns: 1fr;">
+            <!-- Class Selection View -->
+            <div id="class-selection-view">
+                <div class="marks-container">
+                    <h2 style="color: #264508; margin-bottom: 2rem;">Marks & Results Management</h2>
+
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Select Class</label>
+                            <select id="class-select" onchange="loadAssessments()">
+                                <option value="">-- Choose a Class --</option>
+                                <option value="CSE-2A">CSE-2A - Data Structures</option>
+                                <option value="CSE-2B">CSE-2B - Algorithms</option>
+                                <option value="CSE-3A">CSE-3A - Database Systems</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Selection View -->
+            <div id="assessment-selection-view" style="display: none;">
+                <div class="marks-container">
+                    <button onclick="backToClassSelection()"
+                        style="background: #264508; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; margin-bottom: 1.5rem; font-weight: 600;">
+                        <i class="fas fa-arrow-left"></i> Back to Class Selection
+                    </button>
+
+                    <h2 style="color: #264508; margin-bottom: 2rem;">Select Assessment - <span
+                            id="selected-class-name"></span></h2>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Assessment Name</th>
+                                    <th>Type</th>
+                                    <th>Max Marks</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assessments-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marks Entry View -->
+            <div id="marks-entry-view" style="display: none;">
+                <div class="marks-container">
+                    <button onclick="backToAssessments()"
+                        style="background: #264508; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; margin-bottom: 1.5rem; font-weight: 600;">
+                        <i class="fas fa-arrow-left"></i> Back to Assessments
+                    </button>
+
+                    <h2 style="color: #264508; margin-bottom: 1rem;" id="marks-entry-title"></h2>
+                    <p style="color: #264508; font-size: 1.1rem; margin-bottom: 2rem;">
+                        Maximum Marks: <strong id="max-marks-display"></strong>
+                    </p>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Roll Number</th>
+                                    <th>Student Name</th>
+                                    <th>Marks Obtained</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="marks-entry-tbody"></tbody>
+                        </table>
+                    </div>
+
+                    <button onclick="saveMarks()"
+                        style="background: linear-gradient(135deg, #264508, #3d6b0f); color: white; border: none; padding: 1rem 2rem; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 1rem; margin-top: 2rem;">
+                        <i class="fas fa-save"></i> Save All Marks
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Get profile name from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullname = urlParams.get('fullname') || "Dr. Priya Singh";
+        document.getElementById('profile-name').innerText = fullname;
+
+        // Navigation helper
+        function navigateTo(page) {
+            window.location.href = page + '?fullname=' + encodeURIComponent(fullname);
+        }
+
+        // Sample Data
+        const classStudents = {
+            'CSE-2A': [
+                { roll: '21BCE0001', name: 'Arjun Sharma' },
+                { roll: '21BCE0002', name: 'Priya Patel' },
+                { roll: '21BCE0003', name: 'Rahul Kumar' },
+                { roll: '21BCE0004', name: 'Sneha Reddy' },
+                { roll: '21BCE0005', name: 'Vikram Singh' },
+                { roll: '21BCE0006', name: 'Ananya Menon' },
+                { roll: '21BCE0007', name: 'Karthik Iyer' },
+                { roll: '21BCE0008', name: 'Divya Nair' }
+            ],
+            'CSE-2B': [
+                { roll: '21BCE0011', name: 'Rohan Gupta' },
+                { roll: '21BCE0012', name: 'Kavya Pillai' },
+                { roll: '21BCE0013', name: 'Aditya Verma' },
+                { roll: '21BCE0014', name: 'Meera Krishnan' },
+                { roll: '21BCE0015', name: 'Siddharth Rao' },
+                { roll: '21BCE0016', name: 'Ishita Sharma' },
+                { roll: '21BCE0017', name: 'Aryan Joshi' },
+                { roll: '21BCE0018', name: 'Simran Kaur' }
+            ],
+            'CSE-3A': [
+                { roll: '20BCE0001', name: 'Aditya Verma' },
+                { roll: '20BCE0002', name: 'Meera Krishnan' },
+                { roll: '20BCE0003', name: 'Siddharth Rao' },
+                { roll: '20BCE0004', name: 'Ishita Sharma' },
+                { roll: '20BCE0005', name: 'Aryan Joshi' },
+                { roll: '20BCE0006', name: 'Tanya Singh' },
+                { roll: '20BCE0007', name: 'Nikhil Desai' },
+                { roll: '20BCE0008', name: 'Pooja Reddy' }
+            ]
+        };
+
+        // Fixed assessments - DA1, DA2, DA3, CAT1, CAT2, FAT
+        const fixedAssessments = [
+            { id: 'DA1', name: 'Digital Assignment 1', type: 'Assignment', maxMarks: 15 },
+            { id: 'DA2', name: 'Digital Assignment 2', type: 'Assignment', maxMarks: 15 },
+            { id: 'DA3', name: 'Digital Assignment 3', type: 'Assignment', maxMarks: 20 },
+            { id: 'CAT1', name: 'Continuous Assessment Test 1', type: 'Test', maxMarks: 50 },
+            { id: 'CAT2', name: 'Continuous Assessment Test 2', type: 'Test', maxMarks: 50 },
+            { id: 'FAT', name: 'Final Assessment Test', type: 'Test', maxMarks: 100 }
+        ];
+
+        // Store marks for each class and assessment
+        const assessmentMarks = {
+            'CSE-2A': {
+                'DA1': { '21BCE0001': 14, '21BCE0002': 15, '21BCE0003': 12 },
+                'DA2': { '21BCE0001': 13, '21BCE0005': 14 },
+                'DA3': {},
+                'CAT1': { '21BCE0001': 45, '21BCE0002': 48, '21BCE0003': 38 },
+                'CAT2': {},
+                'FAT': {}
+            },
+            'CSE-2B': {
+                'DA1': { '21BCE0011': 14, '21BCE0012': 13 },
+                'DA2': {},
+                'DA3': {},
+                'CAT1': { '21BCE0011': 42, '21BCE0012': 46 },
+                'CAT2': {},
+                'FAT': {}
+            },
+            'CSE-3A': {
+                'DA1': { '20BCE0001': 15, '20BCE0002': 14 },
+                'DA2': {},
+                'DA3': {},
+                'CAT1': { '20BCE0001': 47, '20BCE0002': 49 },
+                'CAT2': {},
+                'FAT': {}
+            }
+        };
+
+        let currentClass = '';
+        let currentAssessment = null;
+
+        // Load assessments for selected class
+        function loadAssessments() {
+            const selectedClass = document.getElementById('class-select').value;
+            if (!selectedClass) return;
+
+            currentClass = selectedClass;
+            document.getElementById('selected-class-name').textContent = selectedClass;
+
+            const tbody = document.getElementById('assessments-tbody');
+            tbody.innerHTML = '';
+
+            fixedAssessments.forEach(assessment => {
+                const row = `
+                    <tr>
+                        <td style="font-weight: 600; color: #264508;">${assessment.name}</td>
+                        <td><span style="background: rgba(38, 69, 8, 0.1); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.9rem; color: #264508; font-weight: 600;">${assessment.type}</span></td>
+                        <td style="font-weight: 700; color: #264508;">${assessment.maxMarks}</td>
+                        <td>
+                            <button onclick="openMarksEntry('${assessment.id}')" style="background: #264508; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                <i class="fas fa-edit"></i> Enter Marks
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            // Show assessment selection view
+            document.getElementById('class-selection-view').style.display = 'none';
+            document.getElementById('assessment-selection-view').style.display = 'block';
+        }
+
+        // Open marks entry for an assessment
+        function openMarksEntry(assessmentId) {
+            currentAssessment = fixedAssessments.find(a => a.id === assessmentId);
+            if (!currentAssessment) return;
+
+            document.getElementById('marks-entry-title').textContent = `Enter Marks: ${currentAssessment.name}`;
+            document.getElementById('max-marks-display').textContent = currentAssessment.maxMarks;
+
+            const students = classStudents[currentClass];
+            const tbody = document.getElementById('marks-entry-tbody');
+            tbody.innerHTML = '';
+
+            // Get existing marks for this class and assessment
+            if (!assessmentMarks[currentClass]) {
+                assessmentMarks[currentClass] = {};
+            }
+            if (!assessmentMarks[currentClass][assessmentId]) {
+                assessmentMarks[currentClass][assessmentId] = {};
+            }
+
+            const existingMarks = assessmentMarks[currentClass][assessmentId];
+
+            students.forEach((student, index) => {
+                const marks = existingMarks[student.roll] || '';
+                const status = marks !== '' ?
+                    (marks >= currentAssessment.maxMarks * 0.4 ? 'Pass' : 'Fail') :
+                    'Not Graded';
+                const statusColor = marks !== '' ?
+                    (marks >= currentAssessment.maxMarks * 0.4 ? '#28a745' : '#ff6b6b') :
+                    '#6c757d';
+
+                const row = `
+                    <tr>
+                        <td style="font-weight: 600;">${student.roll}</td>
+                        <td style="font-weight: 600; color: #264508;">${student.name}</td>
+                        <td>
+                            <input type="number" 
+                                   id="marks-${index}" 
+                                   value="${marks}" 
+                                   min="0" 
+                                   max="${currentAssessment.maxMarks}" 
+                                   placeholder="Enter marks"
+                                   style="padding: 0.5rem; border-radius: 8px; border: 2px solid var(--glass-border); background: var(--glass-bg); font-size: 1rem; color: #264508; width: 120px; font-weight: 600;"
+                                   onchange="updateStatus(${index})">
+                            <span style="margin-left: 0.5rem; color: #264508; opacity: 0.7;">/ ${currentAssessment.maxMarks}</span>
+                        </td>
+                        <td>
+                            <span id="status-${index}" style="color: ${statusColor}; font-weight: 700;">${status}</span>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            // Show marks entry view
+            document.getElementById('assessment-selection-view').style.display = 'none';
+            document.getElementById('marks-entry-view').style.display = 'block';
+        }
+
+        // Update status when marks change
+        function updateStatus(index) {
+            const marksInput = document.getElementById(`marks-${index}`);
+            const statusSpan = document.getElementById(`status-${index}`);
+            const marks = parseFloat(marksInput.value);
+
+            if (isNaN(marks) || marksInput.value === '') {
+                statusSpan.textContent = 'Not Graded';
+                statusSpan.style.color = '#6c757d';
+            } else if (marks >= currentAssessment.maxMarks * 0.4) {
+                statusSpan.textContent = 'Pass';
+                statusSpan.style.color = '#28a745';
+            } else {
+                statusSpan.textContent = 'Fail';
+                statusSpan.style.color = '#ff6b6b';
+            }
+        }
+
+        // Save marks
+        function saveMarks() {
+            const students = classStudents[currentClass];
+            students.forEach((student, index) => {
+                const marksInput = document.getElementById(`marks-${index}`);
+                const marks = marksInput.value;
+                if (marks !== '') {
+                    assessmentMarks[currentClass][currentAssessment.id][student.roll] = parseFloat(marks);
+                }
+            });
+
+            alert(`Marks saved successfully for ${currentAssessment.name}!`);
+        }
+
+        // Navigation functions
+        function backToAssessments() {
+            document.getElementById('marks-entry-view').style.display = 'none';
+            document.getElementById('assessment-selection-view').style.display = 'block';
+        }
+
+        function backToClassSelection() {
+            document.getElementById('assessment-selection-view').style.display = 'none';
+            document.getElementById('class-selection-view').style.display = 'block';
+            document.getElementById('class-select').value = '';
+            currentClass = '';
+        }
+    </script>
+</body>
+
+</html>
