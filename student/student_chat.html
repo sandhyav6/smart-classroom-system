@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Teachers - VIT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand"><img src="../assets/logo.png" alt="VIT Logo"><h1>Vellore Institute of Technology</h1></div>
+        <div class="profile-section">
+            <div class="profile-info"><span class="name" id="profile-name">Student</span><span class="role">CSE - B.Tech | CGPA: <span id="cgpa-display">0.0</span></span></div>
+            <img src="../assets/student_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_dashboard.html')"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_attendance.html')"><i class="fas fa-calendar-alt"></i> Attendance Record</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_timetable.html')"><i class="fas fa-table"></i> Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_assignments.html')"><i class="fas fa-tasks"></i> Assignments</a>
+            <a href="#" class="nav-item active"><i class="fas fa-comments"></i> Chat with Teachers</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_marks.html')"><i class="fas fa-chart-bar"></i> Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_materials.html')"><i class="fas fa-book"></i> Study Materials</a>
+            <a href="#" class="nav-item" style="color: #ff6b6b;" onclick="Session.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+        <main class="main-content" style="display: block;">
+            <div class="marks-container">
+                <div id="teacher-list-view">
+                    <h2><i class="fas fa-comments"></i> Chat with Teachers</h2>
+                    <p style="margin-bottom:1.5rem;opacity:0.8;">Select a teacher to start chatting</p>
+                    <div class="search-bar-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search teachers..." id="teacher-search">
+                    </div>
+                    <div class="teacher-grid" id="teacher-grid"></div>
+                </div>
+                <div id="chat-view" class="hidden">
+                    <button onclick="backToTeachers()" style="background:var(--text-color, #264508); color:white; border:none; padding:0.8rem 1.5rem; border-radius:10px; cursor:pointer; margin-bottom:1rem; font-weight:600;">
+                        <i class="fas fa-arrow-left"></i> Back to Teachers
+                    </button>
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <img src="../assets/faculty_profile.png" alt="Teacher" style="width:40px;height:40px;border-radius:50%;">
+                            <div><strong id="chat-teacher-name"></strong><br><small style="opacity:0.7;" id="chat-teacher-subject"></small></div>
+                            <div class="status-dot online" style="position:static;margin-left:auto;"></div>
+                        </div>
+                        <div class="chat-messages" id="chat-messages"></div>
+                        <div class="chat-input">
+                            <input type="text" id="chat-msg-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()">
+                            <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        const session = Session.requireAuth('student');
+        if (session) {
+            UIHelpers.populateHeader(session);
+            const faculty = dataStore.getFaculty();
+            let currentTeacher = null;
+
+            function renderTeachers(filter = '') {
+                const grid = document.getElementById('teacher-grid');
+                const filtered = filter
+                    ? faculty.filter(f => f.name.toLowerCase().includes(filter.toLowerCase()) || f.subjects.some(s => s.toLowerCase().includes(filter.toLowerCase())))
+                    : faculty;
+
+                grid.innerHTML = filtered.map(f => `
+                    <div class="teacher-card" onclick="openChat('${f.id}')">
+                        <div class="status-dot ${Math.random() > 0.5 ? 'online' : ''}"></div>
+                        <img src="../assets/faculty_profile.png" alt="${f.name}">
+                        <h4 style="color:var(--text-color);margin-bottom:0.3rem;">${f.name}</h4>
+                        <p style="font-size:0.85rem;opacity:0.8;color:var(--text-color);">${f.subjects[0]}</p>
+                    </div>
+                `).join('');
+            }
+
+            renderTeachers();
+            document.getElementById('teacher-search').oninput = SearchUtils.debounce(e => renderTeachers(e.target.value), 250);
+
+            window.openChat = function(facultyId) {
+                currentTeacher = dataStore.getFacultyById(facultyId);
+                if (!currentTeacher) return;
+                document.getElementById('teacher-list-view').classList.add('hidden');
+                document.getElementById('chat-view').classList.remove('hidden');
+                document.getElementById('chat-teacher-name').textContent = currentTeacher.name;
+                document.getElementById('chat-teacher-subject').textContent = currentTeacher.subjects.join(', ');
+
+                const msgs = dataStore.getChatMessages(`${session.id}_${facultyId}`);
+                renderMessages(msgs);
+
+                if (msgs.length === 0) {
+                    // Auto greeting
+                    dataStore.addChatMessage(`${session.id}_${facultyId}`, {
+                        from: 'teacher', text: `Hello! I'm ${currentTeacher.name}. How can I help you today?`
+                    });
+                    renderMessages(dataStore.getChatMessages(`${session.id}_${facultyId}`));
+                }
+            };
+
+            function renderMessages(msgs) {
+                const container = document.getElementById('chat-messages');
+                container.innerHTML = msgs.map(m => `
+                    <div class="message ${m.from === 'student' ? 'sent' : 'received'}">
+                        ${m.text}
+                    </div>
+                `).join('');
+                container.scrollTop = container.scrollHeight;
+            }
+
+            window.sendMessage = function() {
+                const input = document.getElementById('chat-msg-input');
+                const text = input.value.trim();
+                if (!text || !currentTeacher) return;
+
+                const chatKey = `${session.id}_${currentTeacher.id}`;
+                dataStore.addChatMessage(chatKey, { from: 'student', text });
+                input.value = '';
+
+                renderMessages(dataStore.getChatMessages(chatKey));
+
+                // Simulate teacher response after delay
+                setTimeout(() => {
+                    const responses = [
+                        "That's a great question! Let me explain...",
+                        "Please refer to the study materials for this topic.",
+                        "I'll discuss this in detail in the next class.",
+                        "Sure, you can submit it by the deadline.",
+                        "Good thinking! Keep up the good work.",
+                        "Let me check and get back to you.",
+                        "You can find related examples in the reference textbook.",
+                        "I appreciate your initiative. Feel free to ask more questions."
+                    ];
+                    const reply = responses[Math.floor(Math.random() * responses.length)];
+                    dataStore.addChatMessage(chatKey, { from: 'teacher', text: reply });
+                    renderMessages(dataStore.getChatMessages(chatKey));
+                }, 1000 + Math.random() * 2000);
+            };
+
+            window.backToTeachers = function() {
+                document.getElementById('chat-view').classList.add('hidden');
+                document.getElementById('teacher-list-view').classList.remove('hidden');
+                currentTeacher = null;
+            };
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Attendance QR - VIT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand"><img src="../assets/logo.png" alt="VIT Logo"><h1>Vellore Institute of Technology</h1></div>
+        <div class="profile-section">
+            <div class="profile-info"><span class="name" id="profile-name">Faculty</span><span class="role">Faculty - Computer Science</span></div>
+            <img src="../assets/faculty_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_dashboard.html')"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_attendance.html')"><i class="fas fa-calendar-alt"></i> Attendance</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_timetable.html')"><i class="fas fa-table"></i> Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_assignments.html')"><i class="fas fa-tasks"></i> Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_chat.html')"><i class="fas fa-comments"></i> Chat with Students</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_marks.html')"><i class="fas fa-chart-bar"></i> Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_materials.html')"><i class="fas fa-book"></i> Upload Materials</a>
+            <a href="#" class="nav-item" style="color: #ff6b6b;" onclick="Session.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+        <main class="main-content" style="display:flex;justify-content:center;align-items:center;">
+            <div class="marks-container" style="text-align:center;max-width:600px;">
+                <h2><i class="fas fa-qrcode"></i> Generate Attendance QR Code</h2>
+                <p style="margin:1rem 0;opacity:0.8;">Select a class to generate a time-limited QR code for attendance</p>
+
+                <div style="display:flex;gap:1rem;justify-content:center;margin:2rem 0;flex-wrap:wrap;">
+                    <select id="qr-class" style="padding:0.8rem 1.5rem;border-radius:10px;border:2px solid var(--glass-border);background:var(--glass-bg);color:var(--text-color);font-size:1rem;font-weight:600;">
+                        <option value="">-- Select Class --</option>
+                        <option value="CSE-2A">CSE-2A - Data Structures</option>
+                        <option value="CSE-2B">CSE-2B - Algorithms</option>
+                        <option value="CSE-3A">CSE-3A - Database Systems</option>
+                    </select>
+                    <button onclick="generateQR()" style="background:linear-gradient(135deg, #264508, #3d6b0f);color:white;border:none;padding:0.8rem 2rem;border-radius:10px;cursor:pointer;font-weight:700;font-size:1rem;">
+                        <i class="fas fa-qrcode"></i> Generate QR
+                    </button>
+                </div>
+
+                <div id="qr-display" style="display:none;margin:2rem auto;">
+                    <div style="background:white;padding:2rem;border-radius:20px;display:inline-block;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+                        <div id="qr-code" style="width:200px;height:200px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;border-radius:10px;margin:0 auto;">
+                            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:150px;height:150px;" id="qr-grid"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top:1.5rem;">
+                        <p style="font-weight:700;font-size:1.1rem;" id="qr-class-label"></p>
+                        <p style="opacity:0.7;" id="qr-time-label"></p>
+                        <p style="color:#ff6b6b;font-weight:600;margin-top:0.5rem;">
+                            <i class="fas fa-clock"></i> Expires in: <span id="qr-countdown">5:00</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        const session = Session.requireAuth('faculty');
+        if (session) UIHelpers.populateHeader(session);
+
+        let countdownInterval;
+
+        function generateQR() {
+            const cls = document.getElementById('qr-class').value;
+            if (!cls) { Toast.warning('Please select a class'); return; }
+
+            const display = document.getElementById('qr-display');
+            display.style.display = 'block';
+
+            // Generate random QR-like grid
+            const grid = document.getElementById('qr-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 25; i++) {
+                const cell = document.createElement('div');
+                cell.style.background = Math.random() > 0.4 ? '#264508' : '#fff';
+                cell.style.borderRadius = '2px';
+                grid.appendChild(cell);
+            }
+
+            document.getElementById('qr-class-label').textContent = cls;
+            document.getElementById('qr-time-label').textContent = `Generated: ${DateUtils.getCurrentDateTimeStrings().time}`;
+
+            // Countdown timer
+            if (countdownInterval) clearInterval(countdownInterval);
+            let seconds = 300;
+            const countdownEl = document.getElementById('qr-countdown');
+
+            countdownInterval = setInterval(() => {
+                seconds--;
+                const min = Math.floor(seconds / 60);
+                const sec = seconds % 60;
+                countdownEl.textContent = `${min}:${String(sec).padStart(2, '0')}`;
+
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    display.style.display = 'none';
+                    Toast.warning('QR code expired. Generate a new one.');
+                }
+            }, 1000);
+
+            Toast.success(`QR code generated for ${cls}`);
+        }
+    </script>
+</body>
+</html>

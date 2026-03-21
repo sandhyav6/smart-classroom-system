@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Timetable - VIT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand"><img src="../assets/logo.png" alt="VIT Logo"><h1>Vellore Institute of Technology</h1></div>
+        <div class="profile-section">
+            <div class="profile-info"><span class="name" id="profile-name">Student</span><span class="role">CSE - B.Tech | CGPA: <span id="cgpa-display">0.0</span></span></div>
+            <img src="../assets/student_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_dashboard.html')"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_attendance.html')"><i class="fas fa-calendar-alt"></i> Attendance Record</a>
+            <a href="#" class="nav-item active"><i class="fas fa-table"></i> Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_assignments.html')"><i class="fas fa-tasks"></i> Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_chat.html')"><i class="fas fa-comments"></i> Chat with Teachers</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_marks.html')"><i class="fas fa-chart-bar"></i> Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_materials.html')"><i class="fas fa-book"></i> Study Materials</a>
+            <a href="#" class="nav-item" style="color: #ff6b6b;" onclick="Session.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+        <main class="main-content" style="display: block;">
+            <div class="marks-container">
+                <h2><i class="fas fa-table"></i> Weekly Timetable</h2>
+                <div class="filters" style="margin-bottom:1rem;">
+                    <div class="filter-group">
+                        <label>Select Semester</label>
+                        <select id="tt-sem-select"></select>
+                    </div>
+                </div>
+                <div id="timetable-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        const session = Session.requireAuth('student');
+        if (session) {
+            UIHelpers.populateHeader(session);
+            const student = dataStore.getStudentById(session.id);
+
+            const semSelect = document.getElementById('tt-sem-select');
+            for (let i = 1; i <= 8; i++) {
+                const opt = document.createElement('option');
+                opt.value = `Semester ${i}`;
+                opt.textContent = `Semester ${i}`;
+                if (student && i === student.semester) opt.selected = true;
+                semSelect.appendChild(opt);
+            }
+            semSelect.onchange = renderTimetable;
+
+            function renderTimetable() {
+                const sem = semSelect.value;
+                const tt = dataStore.getTimetable(sem);
+                const container = document.getElementById('timetable-container');
+
+                if (!tt || !tt.schedule) {
+                    container.innerHTML = '<p style="text-align:center;padding:2rem;opacity:0.7;">No timetable data available for this semester</p>';
+                    return;
+                }
+
+                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                let html = '<div class="timetable-grid">';
+                html += '<div class="timetable-header">Time</div>';
+                days.forEach(d => html += `<div class="timetable-header">${d}</div>`);
+
+                Object.entries(tt.schedule).forEach(([time, slots]) => {
+                    html += `<div class="timetable-time">${time}</div>`;
+                    days.forEach(day => {
+                        const cls = slots[day];
+                        if (cls) {
+                            html += `<div class="timetable-cell has-class">
+                                <div class="class-name">${cls.name}</div>
+                                <div class="class-code">${cls.code}</div>
+                                <div class="class-location"><i class="fas fa-map-marker-alt"></i> ${cls.location}</div>
+                            </div>`;
+                        } else {
+                            html += '<div class="timetable-cell empty">—</div>';
+                        }
+                    });
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+            renderTimetable();
+        }
+    </script>
+</body>
+</html>

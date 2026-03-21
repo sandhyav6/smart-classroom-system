@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Timetable - VIT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand"><img src="../assets/logo.png" alt="VIT Logo"><h1>Vellore Institute of Technology</h1></div>
+        <div class="profile-section">
+            <div class="profile-info"><span class="name" id="profile-name">Faculty</span><span class="role">Faculty - Computer Science</span></div>
+            <img src="../assets/faculty_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_dashboard.html')"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_attendance.html')"><i class="fas fa-calendar-alt"></i> Attendance</a>
+            <a href="#" class="nav-item active"><i class="fas fa-table"></i> Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_assignments.html')"><i class="fas fa-tasks"></i> Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_chat.html')"><i class="fas fa-comments"></i> Chat with Students</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_marks.html')"><i class="fas fa-chart-bar"></i> Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_materials.html')"><i class="fas fa-book"></i> Upload Materials</a>
+            <a href="#" class="nav-item" style="color: #ff6b6b;" onclick="Session.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+        <main class="main-content" style="display: block;">
+            <div class="marks-container">
+                <h2><i class="fas fa-table"></i> My Teaching Schedule</h2>
+                <p style="margin-bottom:2rem;opacity:0.8;">Your weekly class schedule</p>
+                <div id="faculty-schedule"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        const session = Session.requireAuth('faculty');
+        if (session) {
+            UIHelpers.populateHeader(session);
+            const classes = dataStore.getFacultyTimetable();
+            const container = document.getElementById('faculty-schedule');
+
+            if (classes.length === 0) {
+                container.innerHTML = '<p style="text-align:center;padding:2rem;opacity:0.7;">No classes scheduled</p>';
+            } else {
+                container.innerHTML = classes.map(cls => `
+                    <div class="class-detail-card">
+                        <h4><i class="fas fa-chalkboard-teacher"></i> ${cls.subject}</h4>
+                        <div class="detail-row"><div class="detail-label"><i class="fas fa-clock"></i> Time:</div><div class="detail-value">${cls.time}</div></div>
+                        <div class="detail-row"><div class="detail-label"><i class="fas fa-users"></i> Section:</div><div class="detail-value">${cls.section}</div></div>
+                        <div class="detail-row"><div class="detail-label"><i class="fas fa-map-marker-alt"></i> Room:</div><div class="detail-value">${cls.room}</div></div>
+                    </div>
+                `).join('');
+            }
+        }
+    </script>
+</body>
+</html>

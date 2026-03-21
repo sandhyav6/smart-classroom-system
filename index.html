@@ -5,33 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vellore Institute of Technology</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="Smart Classroom System - Vellore Institute of Technology. Access student and faculty portals for attendance, assignments, marks, and more.">
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
     <header class="index-header">
-        <img src="logo.png" alt="VIT Logo">
+        <img src="assets/logo.png" alt="VIT Logo">
         <h1>Vellore Institute of Technology</h1>
     </header>
 
     <main class="center-container">
-        <div class="selection-container">
-            <a href="student_login.html" class="card">
-                <div class="card-icon">
-                    <i class="fas fa-user-graduate"></i>
-                </div>
-                <h2>Student</h2>
-                <p>Login to access student portal</p>
-            </a>
-
-            <a href="faculty_login.html" class="card">
-                <div class="card-icon">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                </div>
-                <h2>Faculty</h2>
-                <p>Login to access faculty portal</p>
-            </a>
+        <div class="selection-container" id="portal-selection">
+            <!-- Cards rendered by JS -->
         </div>
     </main>
 
@@ -41,6 +28,47 @@
             (11th in NIRF 2023). Founded in 1984, it features a fully flexible credit system, strong international
             partnerships, and high placement records, serving over 87,000 students.</p>
     </footer>
+
+    <!-- Core JS -->
+    <script src="js/data.js"></script>
+    <script src="js/utils.js"></script>
+
+    <script>
+        // Dynamically render portal selection cards
+        const container = document.getElementById('portal-selection');
+        container.innerHTML = `
+            <a href="student/student_login.html" class="card" id="student-card">
+                <div class="card-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h2>Student</h2>
+                <p>Login to access student portal</p>
+            </a>
+
+            <a href="faculty/faculty_login.html" class="card" id="faculty-card">
+                <div class="card-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h2>Faculty</h2>
+                <p>Login to access faculty portal</p>
+            </a>
+        `;
+
+        // Check if already logged in and redirect
+        const session = Session.get();
+        if (session) {
+            if (session.role === 'student') {
+                Toast.info('You are already logged in. Redirecting...');
+                setTimeout(() => Nav.to('student/student_dashboard.html'), 1000);
+            } else if (session.role === 'faculty') {
+                Toast.info('You are already logged in. Redirecting...');
+                setTimeout(() => Nav.to('faculty/faculty_dashboard.html'), 1000);
+            }
+        }
+
+        // Show data init confirmation
+        Toast.success(`System loaded: ${dataStore.getStudents().length} students, ${dataStore.getFaculty().length} faculty`);
+    </script>
 </body>
 
 </html>

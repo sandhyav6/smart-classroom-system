@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Assignments - VIT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="../assets/logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Faculty</span>
+                <span class="role">Faculty - Computer Science</span>
+            </div>
+            <img src="../assets/faculty_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_dashboard.html')"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_attendance.html')"><i class="fas fa-calendar-alt"></i> Attendance</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_timetable.html')"><i class="fas fa-table"></i> Timetable</a>
+            <a href="#" class="nav-item active"><i class="fas fa-tasks"></i> Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_chat.html')"><i class="fas fa-comments"></i> Chat with Students</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_marks.html')"><i class="fas fa-chart-bar"></i> Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_materials.html')"><i class="fas fa-book"></i> Upload Materials</a>
+            <a href="#" class="nav-item" style="color: #ff6b6b;" onclick="Session.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <main class="main-content" style="display: block; grid-template-columns: 1fr;">
+            <div class="marks-container">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+                    <h2>Manage Assignments</h2>
+                    <button onclick="AssignmentManager.showCreateForm()"
+                        style="background: linear-gradient(135deg, #264508, #3d6b0f); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 700;">
+                        <i class="fas fa-plus"></i> Create New Assignment
+                    </button>
+                </div>
+
+                <!-- Search -->
+                <div class="search-bar-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search assignments by title or course..." id="faculty-assignment-search">
+                </div>
+
+                <!-- Create Assignment Form -->
+                <div id="assignment-create-form" style="display: none; background: var(--glass-bg); padding: 2rem; border-radius: 15px; border: 2px solid var(--glass-border); margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem;"><i class="fas fa-plus-circle"></i> Create New Assignment</h3>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:600;">Title *</label>
+                            <input type="text" id="new-title" placeholder="Assignment title"
+                                style="width:100%;padding:0.8rem;border:2px solid var(--glass-border);border-radius:10px;background:var(--glass-bg);color:var(--text-color);font-size:0.95rem;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:600;">Course *</label>
+                            <input type="text" id="new-course" placeholder="e.g., Data Structures"
+                                style="width:100%;padding:0.8rem;border:2px solid var(--glass-border);border-radius:10px;background:var(--glass-bg);color:var(--text-color);font-size:0.95rem;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:600;">Course Code</label>
+                            <input type="text" id="new-code" placeholder="e.g., CSE201"
+                                style="width:100%;padding:0.8rem;border:2px solid var(--glass-border);border-radius:10px;background:var(--glass-bg);color:var(--text-color);font-size:0.95rem;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:0.5rem;font-weight:600;">Due Date *</label>
+                            <input type="date" id="new-due"
+                                style="width:100%;padding:0.8rem;border:2px solid var(--glass-border);border-radius:10px;background:var(--glass-bg);color:var(--text-color);font-size:0.95rem;">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1rem;">
+                        <label style="display:block;margin-bottom:0.5rem;font-weight:600;">Short Description</label>
+                        <textarea id="new-desc" rows="2" placeholder="Brief description..."
+                            style="width:100%;padding:0.8rem;border:2px solid var(--glass-border);border-radius:10px;background:var(--glass-bg);color:var(--text-color);font-size:0.95rem;resize:vertical;"></textarea>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <label style="display:block;margin-bottom:0.5rem;font-weight:600;">Detailed Instructions</label>
+                        <textarea id="new-detail" rows="4" placeholder="Detailed assignment instructions..."
+                            style="width:100%;padding:0.8rem;border:2px solid var(--glass-border);border-radius:10px;background:var(--glass-bg);color:var(--text-color);font-size:0.95rem;resize:vertical;"></textarea>
+                    </div>
+
+                    <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+                        <button onclick="AssignmentManager.createAssignment()"
+                            style="background: linear-gradient(135deg, #264508, #3d6b0f); color: white; border: none; padding: 0.8rem 2rem; border-radius: 10px; cursor: pointer; font-weight: 700;">
+                            <i class="fas fa-check"></i> Create
+                        </button>
+                        <button onclick="AssignmentManager.hideCreateForm()"
+                            style="background: #ff6b6b; color: white; border: none; padding: 0.8rem 2rem; border-radius: 10px; cursor: pointer; font-weight: 700;">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Assignments List -->
+                <div id="faculty-assignments-list"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/assignments.js"></script>
+    <script>
+        AssignmentManager.init('faculty');
+    </script>
+</body>
+
+</html>

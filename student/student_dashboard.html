@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - VIT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="../assets/logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Student</span>
+                <span class="role">CSE - B.Tech | CGPA: <span id="cgpa-display">0.0</span></span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="../assets/student_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <a href="#" class="nav-item active" data-page="dashboard" onclick="Nav.to('student_dashboard.html')"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" data-page="attendance" onclick="Nav.to('student_attendance.html')"><i class="fas fa-calendar-alt"></i> Attendance Record</a>
+            <a href="javascript:void(0)" class="nav-item" data-page="timetable" onclick="Nav.to('student_timetable.html')"><i class="fas fa-table"></i> Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" data-page="assignments" onclick="Nav.to('student_assignments.html')"><i class="fas fa-tasks"></i> Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" data-page="chat" onclick="Nav.to('student_chat.html')"><i class="fas fa-comments"></i> Chat with Teachers</a>
+            <a href="javascript:void(0)" class="nav-item" data-page="marks" onclick="Nav.to('student_marks.html')"><i class="fas fa-chart-bar"></i> Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item" data-page="materials" onclick="Nav.to('student_materials.html')"><i class="fas fa-book"></i> Study Materials</a>
+            <a href="#" class="nav-item" style="color: #ff6b6b;" onclick="Session.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="dashboard-view">
+            <!-- Central Feed / Quick Stats -->
+            <div class="center-feed">
+                <h2 id="welcome-msg">Welcome back!</h2>
+                <div class="selection-container">
+                    <div class="card" style="width: 250px; padding: 2rem; cursor: pointer;">
+                        <i class="fas fa-user-check" style="font-size: 2.5rem; margin-bottom: 1rem;"></i>
+                        <h3 id="attendance-display">--%</h3>
+                        <p>Attendance</p>
+                    </div>
+                    <div class="card" style="width: 250px; padding: 2rem; cursor: pointer;" onclick="openQRScanner()">
+                        <i class="fas fa-qrcode" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-color);"></i>
+                        <h3>Scan QR</h3>
+                        <p>Attendance Scanner</p>
+                    </div>
+                </div>
+
+                <!-- Current Date & Time -->
+                <div style="background: var(--glass-bg); padding: 1rem 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; border: 2px solid var(--glass-border);">
+                    <i class="fas fa-calendar-day" style="font-size: 1.5rem; color: var(--text-color);"></i>
+                    <div>
+                        <div id="current-date" style="font-weight: 700; font-size: 1.1rem;"></div>
+                        <div id="current-time" style="font-size: 0.9rem; opacity: 0.8;"></div>
+                    </div>
+                </div>
+
+                <!-- Today's Timetable -->
+                <h3 style="margin-bottom: 1rem; cursor: pointer;" onclick="Nav.to('student_timetable.html')">
+                    <i class="fas fa-clock"></i> Today's Classes
+                    <i class="fas fa-external-link-alt" style="font-size: 0.8rem; margin-left: 0.5rem; opacity: 0.7;"></i>
+                </h3>
+                <div id="today-timetable">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Right Panel: Submissions Due -->
+            <div class="right-panel">
+                <h3 style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem;">
+                    Submissions due</h3>
+                <div id="upcoming-assignments">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Core JS -->
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/dashboard.js"></script>
+
+    <script>
+        // Initialize dashboard
+        Dashboard.init('student');
+
+        // QR Scanner
+        function openQRScanner() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                Toast.info('QR Scanner would open here on mobile device');
+            } else {
+                Toast.warning('QR code scanning is only available on mobile devices');
+            }
+        }
+    </script>
+</body>
+
+</html>

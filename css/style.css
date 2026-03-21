@@ -1404,3 +1404,438 @@ th {
     border-radius: 12px;
     border: 2px solid rgba(38, 69, 8, 0.2);
 }
+
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+body.dark-mode {
+    --primary-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    --glass-bg: rgba(30, 30, 50, 0.7);
+    --glass-border: rgba(100, 120, 200, 0.2);
+    --glass-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.4);
+    --text-color: #e0e0ff;
+    background: var(--primary-gradient);
+    color: var(--text-color);
+}
+
+body.dark-mode header {
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom-color: rgba(100, 120, 200, 0.15);
+}
+
+body.dark-mode .sidebar {
+    background: rgba(20, 20, 40, 0.6);
+    border-right-color: rgba(100, 120, 200, 0.15);
+}
+
+body.dark-mode .nav-item:hover,
+body.dark-mode .nav-item.active {
+    background: rgba(100, 120, 200, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .card {
+    background: rgba(30, 30, 60, 0.8);
+    border-color: rgba(100, 120, 200, 0.2);
+    color: #e0e0ff;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .card:hover {
+    background: rgba(40, 40, 80, 0.9);
+    border-color: rgba(100, 120, 200, 0.4);
+}
+
+body.dark-mode .event-item {
+    background: rgba(30, 30, 60, 0.6);
+    color: #e0e0ff;
+}
+
+body.dark-mode .event-item:hover {
+    background: rgba(40, 40, 80, 0.8);
+}
+
+body.dark-mode .right-panel {
+    background: rgba(20, 20, 40, 0.6);
+    border-color: rgba(100, 120, 200, 0.15);
+}
+
+body.dark-mode .marks-container {
+    background: rgba(20, 20, 40, 0.6);
+    border-color: rgba(100, 120, 200, 0.15);
+}
+
+body.dark-mode th {
+    background: rgba(40, 40, 80, 0.5);
+    color: #c0c0ff;
+}
+
+body.dark-mode td {
+    border-bottom-color: rgba(100, 120, 200, 0.1);
+    color: #d0d0e8;
+}
+
+body.dark-mode .login-container {
+    background: rgba(20, 20, 40, 0.8);
+    border-color: rgba(100, 120, 200, 0.2);
+}
+
+body.dark-mode .form-group input {
+    background: rgba(40, 40, 80, 0.5);
+    border-color: rgba(100, 120, 200, 0.2);
+    color: #e0e0ff;
+}
+
+body.dark-mode .form-group input::placeholder {
+    color: rgba(200, 200, 240, 0.4);
+}
+
+body.dark-mode .form-group input:focus {
+    background: rgba(50, 50, 90, 0.6);
+    border-color: #6c7bd4;
+}
+
+body.dark-mode .btn-login {
+    background: #4a5fc1;
+    box-shadow: 0 4px 15px rgba(74, 95, 193, 0.3);
+}
+
+body.dark-mode .btn-login:hover {
+    background: #3a4fa1;
+}
+
+body.dark-mode .filter-group select {
+    background: rgba(40, 40, 80, 0.5);
+    border-color: rgba(100, 120, 200, 0.2);
+    color: #e0e0ff;
+}
+
+body.dark-mode .filter-group select option {
+    background: #1a1a2e;
+    color: #e0e0ff;
+}
+
+body.dark-mode .assignment-card {
+    background: rgba(30, 30, 60, 0.6);
+    border-color: rgba(100, 120, 200, 0.2);
+    border-left-color: #6c7bd4;
+}
+
+body.dark-mode .assignment-card:hover {
+    background: rgba(40, 40, 80, 0.8);
+}
+
+body.dark-mode .assignment-card.completed {
+    border-left-color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+body.dark-mode .assignment-title,
+body.dark-mode .assignment-meta,
+body.dark-mode .assignment-description {
+    color: #d0d0e8;
+}
+
+body.dark-mode .timetable-cell {
+    background: rgba(30, 30, 60, 0.4);
+}
+
+body.dark-mode .timetable-cell.has-class {
+    background: rgba(40, 40, 80, 0.6);
+    border-left-color: #6c7bd4;
+}
+
+body.dark-mode .timetable-header {
+    background: rgba(40, 40, 80, 0.5);
+    color: #c0c0ff;
+}
+
+body.dark-mode .timetable-time {
+    background: rgba(30, 30, 60, 0.5);
+    color: #c0c0ff;
+}
+
+body.dark-mode .class-name,
+body.dark-mode .class-code,
+body.dark-mode .class-location,
+body.dark-mode .detail-label,
+body.dark-mode .detail-value {
+    color: #d0d0e8;
+}
+
+body.dark-mode .profile-section {
+    background: rgba(40, 40, 80, 0.3);
+    border-color: rgba(100, 120, 200, 0.15);
+}
+
+body.dark-mode footer {
+    background: rgba(0, 0, 0, 0.3);
+    border-top-color: rgba(100, 120, 200, 0.15);
+}
+
+body.dark-mode footer p {
+    color: #b0b0d0;
+}
+
+body.dark-mode .chat-interface {
+    background: #1a1a2e;
+    border-color: rgba(100, 120, 200, 0.2);
+}
+
+body.dark-mode .chat-header {
+    background: rgba(40, 40, 80, 0.5);
+    border-bottom-color: rgba(100, 120, 200, 0.2);
+}
+
+body.dark-mode .message.received {
+    background: rgba(40, 40, 80, 0.6);
+    color: #e0e0ff;
+}
+
+body.dark-mode .message.sent {
+    background: #4a5fc1;
+}
+
+body.dark-mode .chat-input {
+    background: rgba(40, 40, 80, 0.5);
+    border-top-color: rgba(100, 120, 200, 0.2);
+}
+
+body.dark-mode .chat-input input {
+    background: rgba(30, 30, 60, 0.6);
+    border-color: rgba(100, 120, 200, 0.2);
+    color: #e0e0ff;
+}
+
+body.dark-mode .class-detail-card {
+    background: rgba(30, 30, 60, 0.6);
+    border-color: rgba(100, 120, 200, 0.2);
+    border-left-color: #6c7bd4;
+}
+
+body.dark-mode .teacher-card {
+    background: rgba(30, 30, 60, 0.6);
+    border-color: rgba(100, 120, 200, 0.2);
+}
+
+body.dark-mode .teacher-card:hover {
+    background: rgba(40, 40, 80, 0.8);
+}
+
+/* ============================================================
+   DARK MODE TOGGLE BUTTON
+   ============================================================ */
+.dark-mode-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--glass-border);
+    background: var(--glass-bg);
+    color: var(--text-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode-btn:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .dark-mode-btn {
+    border-color: rgba(100, 120, 200, 0.3);
+    color: #ffd700;
+}
+
+/* ============================================================
+   TOAST NOTIFICATIONS
+   ============================================================ */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 400px;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    transform: translateX(120%);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    backdrop-filter: blur(10px);
+}
+
+.toast-visible {
+    transform: translateX(0);
+}
+
+.toast-hiding {
+    opacity: 0;
+    transform: translateX(120%);
+}
+
+.toast-success {
+    background: linear-gradient(135deg, #28a745, #218838);
+}
+
+.toast-error {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.toast-info {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.toast-warning {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    color: #333;
+}
+
+.toast i {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.toast span {
+    flex: 1;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    padding: 0;
+    width: auto;
+    height: auto;
+    flex-shrink: 0;
+}
+
+.toast-close:hover {
+    opacity: 1;
+}
+
+/* ============================================================
+   SEARCH BAR
+   ============================================================ */
+.search-bar-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 1.5rem;
+}
+
+.search-bar-wrapper .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-color);
+    opacity: 0.5;
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 2.5rem;
+    border-radius: 12px;
+    border: 2px solid var(--glass-border);
+    background: var(--glass-bg);
+    color: var(--text-color);
+    font-size: 0.95rem;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+}
+
+.search-input:focus {
+    border-color: #264508;
+    box-shadow: 0 0 0 3px rgba(38, 69, 8, 0.1);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+body.dark-mode .search-input {
+    background: rgba(40, 40, 80, 0.5);
+    border-color: rgba(100, 120, 200, 0.2);
+    color: #e0e0ff;
+}
+
+body.dark-mode .search-input:focus {
+    border-color: #6c7bd4;
+    box-shadow: 0 0 0 3px rgba(108, 123, 212, 0.15);
+    background: rgba(50, 50, 90, 0.6);
+}
+
+/* ============================================================
+   ADDITIONAL ANIMATIONS
+   ============================================================ */
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+    animation: slideInUp 0.4s ease forwards;
+}
+
+/* Demo credentials banner */
+.demo-banner {
+    background: linear-gradient(135deg, rgba(38, 69, 8, 0.1), rgba(38, 69, 8, 0.05));
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 0.8rem 1.2rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.demo-banner:hover {
+    background: linear-gradient(135deg, rgba(38, 69, 8, 0.15), rgba(38, 69, 8, 0.1));
+    transform: translateY(-1px);
+}
+
+body.dark-mode .demo-banner {
+    background: linear-gradient(135deg, rgba(100, 120, 200, 0.1), rgba(100, 120, 200, 0.05));
+    border-color: rgba(100, 120, 200, 0.2);
+}
+
+/* Attendance summary bar */
+.attendance-summary {
+    background: var(--glass-bg);
+    border: 2px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    font-size: 0.95rem;
+}

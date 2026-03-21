@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Attendance - VIT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="../assets/logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Faculty</span>
+                <span class="role">Faculty - Computer Science</span>
+            </div>
+            <img src="../assets/faculty_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_dashboard.html')"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="#" class="nav-item active"><i class="fas fa-calendar-alt"></i> Attendance</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_timetable.html')"><i class="fas fa-table"></i> Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_assignments.html')"><i class="fas fa-tasks"></i> Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_chat.html')"><i class="fas fa-comments"></i> Chat with Students</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_marks.html')"><i class="fas fa-chart-bar"></i> Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_materials.html')"><i class="fas fa-book"></i> Upload Materials</a>
+            <a href="#" class="nav-item" style="color: #ff6b6b;" onclick="Session.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <main class="main-content" style="display: block; grid-template-columns: 1fr;">
+            <div class="marks-container">
+                <h2>Mark Attendance</h2>
+
+                <div class="filters" style="align-items: flex-end; gap: 1.5rem;">
+                    <div class="filter-group">
+                        <label>Select Class</label>
+                        <select id="class-select">
+                            <option value="">-- Select Class --</option>
+                            <option value="CSE-2A">CSE-2A (Section A)</option>
+                            <option value="CSE-2B">CSE-2B (Section B)</option>
+                            <option value="CSE-3A">CSE-3A (Section C)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date</label>
+                        <input type="date" id="attendance-date"
+                            style="padding: 0.8rem 1.5rem; border-radius: 12px; border: 2px solid rgba(38, 69, 8, 0.2); background: rgba(255, 255, 255, 0.3); color: var(--text-color); font-size: 1rem; font-weight: 600;">
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button onclick="AttendanceManager.markAllPresent()"
+                            style="background: #28a745; color: white; border: none; padding: 0.8rem 1.2rem; border-radius: 10px; cursor: pointer; font-weight: 600;">
+                            <i class="fas fa-check-double"></i> All Present
+                        </button>
+                        <button onclick="AttendanceManager.markAllAbsent()"
+                            style="background: #ff6b6b; color: white; border: none; padding: 0.8rem 1.2rem; border-radius: 10px; cursor: pointer; font-weight: 600;">
+                            <i class="fas fa-times"></i> All Absent
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search bar -->
+                <div id="attendance-search-container" style="display: none; margin-top: 1rem;">
+                    <div class="search-bar-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search by name or ID..."
+                            oninput="AttendanceManager.searchStudents(this.value)">
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div id="attendance-summary" class="attendance-summary" style="display: none;"></div>
+
+                <!-- Students Table -->
+                <div id="attendance-table" style="display: none; margin-top: 1rem;">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Reg. Number</th>
+                                    <th>Student Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button id="submit-btn" onclick="AttendanceManager.submitAttendance()" style="display: none;
+                    background: linear-gradient(135deg, #264508, #3d6b0f);
+                    color: white; border: none; padding: 1rem 2.5rem; border-radius: 12px;
+                    cursor: pointer; font-weight: 700; font-size: 1.1rem; margin-top: 1.5rem;
+                    box-shadow: 0 4px 15px rgba(38, 69, 8, 0.3); transition: all 0.3s ease;">
+                    <i class="fas fa-save"></i> Submit Attendance
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/attendance.js"></script>
+    <script>
+        AttendanceManager.init('faculty');
+    </script>
+</body>
+
+</html>

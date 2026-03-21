@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignments - VIT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .assignment-card.completed { border-left: 4px solid #28a745; background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(40, 167, 69, 0.1)); }
+        .assignment-card.completed:hover { border-left-color: #1e7e34; background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.15)); }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="../assets/logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Student</span>
+                <span class="role">CSE - B.Tech | CGPA: <span id="cgpa-display">0.0</span></span>
+                <span class="blurred-password" style="filter: none; letter-spacing: 2px;">••••••</span>
+            </div>
+            <img src="../assets/student_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_dashboard.html')"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_attendance.html')"><i class="fas fa-calendar-alt"></i> Attendance Record</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_timetable.html')"><i class="fas fa-table"></i> Timetable</a>
+            <a href="#" class="nav-item active"><i class="fas fa-tasks"></i> Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_chat.html')"><i class="fas fa-comments"></i> Chat with Teachers</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_marks.html')"><i class="fas fa-chart-bar"></i> Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('student_materials.html')"><i class="fas fa-book"></i> Study Materials</a>
+            <a href="#" class="nav-item" style="color: #ff6b6b;" onclick="Session.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <main class="main-content" style="display: block; grid-template-columns: 1fr;">
+            <div class="marks-container">
+                <div id="assignments-overview">
+                    <h2>Assignments</h2>
+                    <div class="filters" style="margin-bottom: 2rem;">
+                        <div class="filter-group">
+                            <label>Select Subject</label>
+                            <select id="subject-filter"></select>
+                        </div>
+                    </div>
+                    <div id="assignments-display" style="display: none;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                            <div>
+                                <h3 style="color: var(--text-color); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(38, 69, 8, 0.2);">
+                                    <i class="fas fa-clock"></i> Upcoming
+                                </h3>
+                                <div id="upcoming-assignments"></div>
+                            </div>
+                            <div>
+                                <h3 style="color: #ff6b6b; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(255, 0, 0, 0.2);">
+                                    <i class="fas fa-exclamation-triangle"></i> Past Due
+                                </h3>
+                                <div id="pastdue-assignments"></div>
+                            </div>
+                            <div>
+                                <h3 style="color: #28a745; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(40, 167, 69, 0.2);">
+                                    <i class="fas fa-check-circle"></i> Completed
+                                </h3>
+                                <div id="completed-assignments"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment Detail View -->
+                <div id="assignment-detail" class="hidden">
+                    <button onclick="AssignmentManager.backToAssignments()"
+                        style="background:var(--text-color, #264508); color:white; border:none; padding:0.8rem 1.5rem; border-radius:10px; cursor:pointer; margin-bottom:1.5rem; font-weight:600;">
+                        <i class="fas fa-arrow-left"></i> Back to Assignments
+                    </button>
+                    <div class="assignment-detail-container">
+                        <h2 id="detail-assignment-title" style="margin-bottom: 1rem;"></h2>
+                        <div class="detail-info-grid">
+                            <div class="detail-row">
+                                <div class="detail-label"><i class="fas fa-book"></i> Course:</div>
+                                <div class="detail-value" id="detail-course"></div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label"><i class="fas fa-code"></i> Course Code:</div>
+                                <div class="detail-value" id="detail-course-code"></div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label"><i class="fas fa-calendar-alt"></i> Due Date:</div>
+                                <div class="detail-value" id="detail-due-date"></div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 2rem;">
+                            <h3 style="margin-bottom: 1rem;">Assignment Description</h3>
+                            <div id="detail-description"
+                                style="background: var(--glass-bg); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--text-color, #264508); line-height: 1.6;"></div>
+                        </div>
+                        <div id="submission-details-section" style="margin-top: 2rem; display: none;">
+                            <h3 style="color: #28a745; margin-bottom: 1rem;"><i class="fas fa-check-circle"></i> Submission Details</h3>
+                            <div style="background: rgba(40, 167, 69, 0.1); padding: 1.5rem; border-radius: 12px; border-left: 4px solid #28a745;">
+                                <div class="detail-row">
+                                    <div class="detail-label"><i class="fas fa-calendar-check"></i> Submitted On:</div>
+                                    <div class="detail-value" id="detail-submitted-date"></div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label"><i class="fas fa-file"></i> Uploaded File:</div>
+                                    <div class="detail-value" id="detail-uploaded-file"></div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label"><i class="fas fa-check"></i> Status:</div>
+                                    <div class="detail-value" style="color: #28a745; font-weight: 700;">✓ Submitted Successfully</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="submit-section" style="margin-top: 2rem;">
+                            <h3 style="margin-bottom: 1rem;">Submit Assignment</h3>
+                            <div style="background: var(--glass-bg); padding: 2rem; border-radius: 12px; border: 2px solid var(--glass-border);">
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                                        <i class="fas fa-file-upload"></i> Upload File:
+                                    </label>
+                                    <input type="file" id="assignment-file-input"
+                                        style="padding: 0.8rem; border: 2px solid var(--glass-border); border-radius: 8px; width: 100%; background: var(--glass-bg); font-weight: 500;">
+                                </div>
+                                <button onclick="AssignmentManager.submitAssignment()"
+                                    style="background:var(--text-color, #264508); color:white; border:none; padding:1rem 2rem; border-radius:10px; cursor:pointer; font-weight:700; font-size: 1rem; margin-top: 1rem;">
+                                    <i class="fas fa-upload"></i> Submit Assignment
+                                </button>
+                                <div id="submission-status" style="margin-top: 1rem; font-weight: 600;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/assignments.js"></script>
+    <script>
+        AssignmentManager.init('student');
+    </script>
+</body>
+
+</html>
