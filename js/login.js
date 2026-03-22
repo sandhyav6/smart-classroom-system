@@ -1,11 +1,12 @@
 // ============================================================
 // login.js — Authentication system for Smart Classroom
-// Validates credentials against dataStore, manages sessions
+// Uses backend API endpoints exclusively — NO localStorage
+// NO Session.set() — session is managed entirely by backend
 // ============================================================
 
 const LoginManager = {
     // ---- Student Login ----
-    handleStudentLogin(event) {
+    async handleStudentLogin(event) {
         event.preventDefault();
 
         const regNo = document.getElementById('registration').value.trim().toUpperCase();
@@ -16,36 +17,29 @@ const LoginManager = {
             return false;
         }
 
-        const student = dataStore.authenticateStudent(regNo, password);
+        try {
+            const result = await dataStore.authenticateStudent(regNo, password);
 
-        if (student) {
-            Session.set({
-                role: 'student',
-                id: student.id,
-                name: student.name,
-                department: student.department,
-                semester: student.semester,
-                cgpa: student.cgpa
-            });
+            if (result) {
+                // Backend already set the session cookie — load from server
+                await Session.load();
 
-            Toast.success(`Welcome, ${student.firstName || student.name}!`);
-            setTimeout(() => {
-                window.location.href = 'student_dashboard.html';
-            }, 800);
-        } else {
-            // Check if student exists but wrong password
-            const exists = dataStore.getStudentById(regNo);
-            if (exists) {
-                Toast.error('Incorrect password. Try: Pass@123');
+                Toast.success(`Welcome, ${result.firstName || result.name}!`);
+                setTimeout(() => {
+                    window.location.href = 'student_dashboard.html';
+                }, 800);
             } else {
-                Toast.error('Student not found. Check registration number.');
+                Toast.error('Invalid credentials. Please check your registration number and password.');
             }
+        } catch (err) {
+            Toast.error('Login failed. Is the server running?');
+            console.error('Login error:', err);
         }
         return false;
     },
 
     // ---- Faculty Login ----
-    handleFacultyLogin(event) {
+    async handleFacultyLogin(event) {
         event.preventDefault();
 
         const empId = document.getElementById('employeeid').value.trim();
@@ -56,28 +50,23 @@ const LoginManager = {
             return false;
         }
 
-        const faculty = dataStore.authenticateFaculty(empId, password);
+        try {
+            const result = await dataStore.authenticateFaculty(empId, password);
 
-        if (faculty) {
-            Session.set({
-                role: 'faculty',
-                id: faculty.id,
-                name: faculty.name,
-                department: faculty.department,
-                subjects: faculty.subjects
-            });
+            if (result) {
+                // Backend already set the session cookie — load from server
+                await Session.load();
 
-            Toast.success(`Welcome, ${faculty.name}!`);
-            setTimeout(() => {
-                window.location.href = 'faculty_dashboard.html';
-            }, 800);
-        } else {
-            const exists = dataStore.getFacultyById(empId);
-            if (exists) {
-                Toast.error('Incorrect password. Try: Teach@123');
+                Toast.success(`Welcome, ${result.name}!`);
+                setTimeout(() => {
+                    window.location.href = 'faculty_dashboard.html';
+                }, 800);
             } else {
-                Toast.error('Faculty not found. Check Employee ID.');
+                Toast.error('Invalid credentials. Please check your Employee ID and password.');
             }
+        } catch (err) {
+            Toast.error('Login failed. Is the server running?');
+            console.error('Login error:', err);
         }
         return false;
     },
