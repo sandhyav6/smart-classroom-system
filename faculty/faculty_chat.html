@@ -63,10 +63,13 @@
     <script src="../js/data.js"></script>
     <script src="../js/utils.js"></script>
     <script>
-        const session = Session.requireAuth('faculty');
-        if (session) {
+        (async () => {
+            await dataStore.ready();
+            const session = await Session.requireAuth('faculty');
+            if (!session) return;
+
             UIHelpers.populateHeader(session);
-            const students = dataStore.getStudents().slice(0, 30); // Show first 30
+            const students = dataStore.getStudents().slice(0, 30);
             let currentStudent = null;
 
             function renderStudents(filter = '') {
@@ -88,7 +91,7 @@
             renderStudents();
             document.getElementById('student-search').oninput = SearchUtils.debounce(e => renderStudents(e.target.value), 250);
 
-            window.openChat = function(studentId) {
+            window.openChat = async function(studentId) {
                 currentStudent = dataStore.getStudentById(studentId);
                 if (!currentStudent) return;
                 document.getElementById('student-list-view').classList.add('hidden');
@@ -97,14 +100,15 @@
                 document.getElementById('chat-student-id').textContent = `${currentStudent.id} • Semester ${currentStudent.semester}`;
 
                 const chatKey = `${currentStudent.id}_${session.id}`;
-                const msgs = dataStore.getChatMessages(chatKey);
+                let msgs = await dataStore.getChatMessages(chatKey);
                 renderMessages(msgs);
 
                 if (msgs.length === 0) {
-                    dataStore.addChatMessage(chatKey, {
+                    await dataStore.addChatMessage(chatKey, {
                         from: 'teacher', text: `Hello ${currentStudent.firstName}! How are your studies going?`
                     });
-                    renderMessages(dataStore.getChatMessages(chatKey));
+                    msgs = await dataStore.getChatMessages(chatKey);
+                    renderMessages(msgs);
                 }
             };
 
@@ -116,27 +120,29 @@
                 container.scrollTop = container.scrollHeight;
             }
 
-            window.sendMessage = function() {
+            window.sendMessage = async function() {
                 const input = document.getElementById('chat-msg-input');
                 const text = input.value.trim();
                 if (!text || !currentStudent) return;
 
                 const chatKey = `${currentStudent.id}_${session.id}`;
-                dataStore.addChatMessage(chatKey, { from: 'teacher', text });
+                await dataStore.addChatMessage(chatKey, { from: 'teacher', text });
                 input.value = '';
-                renderMessages(dataStore.getChatMessages(chatKey));
+                let msgs = await dataStore.getChatMessages(chatKey);
+                renderMessages(msgs);
 
-                setTimeout(() => {
+                setTimeout(async () => {
                     const responses = [
                         "Thank you, professor!", "I'll work on it right away.",
                         "Could you explain that a bit more?", "Yes, I understand.",
                         "I'll submit it before the deadline.", "Thanks for the guidance!",
                         "I'll review the materials.", "Understood, professor."
                     ];
-                    dataStore.addChatMessage(chatKey, {
+                    await dataStore.addChatMessage(chatKey, {
                         from: 'student', text: responses[Math.floor(Math.random() * responses.length)]
                     });
-                    renderMessages(dataStore.getChatMessages(chatKey));
+                    const updated = await dataStore.getChatMessages(chatKey);
+                    renderMessages(updated);
                 }, 1000 + Math.random() * 2000);
             };
 
@@ -145,7 +151,7 @@
                 document.getElementById('student-list-view').classList.remove('hidden');
                 currentStudent = null;
             };
-        }
+        })();
     </script>
 </body>
 </html>

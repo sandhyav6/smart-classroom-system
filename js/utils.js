@@ -1,6 +1,7 @@
 // ============================================================
 // utils.js — Shared utilities for Smart Classroom System
 // Toast notifications, Dark mode, Session management, Helpers
+// ALL localStorage usage REMOVED — uses backend session + cookies
 // ============================================================
 
 // ---- Toast Notification System ----
@@ -55,12 +56,21 @@ const Toast = {
     warning(msg) { this.show(msg, 'warning', 4000); }
 };
 
-// ---- Dark Mode ----
+// ---- Dark Mode (uses cookie instead of localStorage) ----
 const DarkMode = {
-    KEY: 'vit_dark_mode',
+    COOKIE_NAME: 'vit_dark_mode',
+
+    _getCookie() {
+        const match = document.cookie.match(new RegExp('(^| )' + this.COOKIE_NAME + '=([^;]+)'));
+        return match ? match[2] : null;
+    },
+
+    _setCookie(value) {
+        document.cookie = `${this.COOKIE_NAME}=${value};path=/;max-age=${365 * 24 * 60 * 60}`;
+    },
 
     init() {
-        const isDark = localStorage.getItem(this.KEY) === 'true';
+        const isDark = this._getCookie() === 'true';
         if (isDark) document.body.classList.add('dark-mode');
         this._updateToggleIcon();
     },
@@ -68,7 +78,7 @@ const DarkMode = {
     toggle() {
         document.body.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
-        localStorage.setItem(this.KEY, isDark);
+        this._setCookie(isDark);
         this._updateToggleIcon();
         Toast.info(isDark ? '🌙 Dark mode enabled' : '☀️ Light mode enabled');
     },
@@ -85,42 +95,58 @@ const DarkMode = {
     }
 };
 
-// ---- Session Management ----
+// ---- Session Management (backend-driven, NO localStorage) ----
 const Session = {
-    KEY: 'vit_session',
+    _cache: null,
+    _loading: null,
 
-    set(data) {
-        const session = {
-            ...data,
-            loggedInAt: new Date().toISOString()
-        };
-        localStorage.setItem(this.KEY, JSON.stringify(session));
+    // Load session from backend — returns cached if available
+    async load() {
+        if (this._cache) return this._cache;
+        if (this._loading) return this._loading;
+
+        this._loading = (async () => {
+            try {
+                const res = await fetch('/api/auth/session', { credentials: 'include' });
+                const data = await res.json();
+                if (data.loggedIn && data.user) {
+                    this._cache = data.user;
+                    return this._cache;
+                }
+                this._cache = null;
+                return null;
+            } catch (err) {
+                console.error('Session check failed:', err);
+                this._cache = null;
+                return null;
+            } finally {
+                this._loading = null;
+            }
+        })();
+
+        return this._loading;
     },
 
+    // Synchronous getter — returns cached session (call load() first)
     get() {
-        try {
-            return JSON.parse(localStorage.getItem(this.KEY));
-        } catch {
-            return null;
-        }
+        return this._cache;
     },
 
     clear() {
-        localStorage.removeItem(this.KEY);
+        this._cache = null;
     },
 
     isLoggedIn() {
-        return this.get() !== null;
+        return this._cache !== null;
     },
 
     getRole() {
-        return this.get()?.role || null;
+        return this._cache?.role || null;
     },
 
-    requireAuth(role) {
-        const session = this.get();
+    async requireAuth(role) {
+        const session = await this.load();
         if (!session || (role && session.role !== role)) {
-            // Determine correct login page based on current path
             const path = window.location.pathname;
             if (path.includes('faculty')) {
                 window.location.href = 'faculty_login.html';
@@ -134,9 +160,16 @@ const Session = {
         return session;
     },
 
-    logout() {
+    async logout() {
+        try {
+            await fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+        } catch (err) {
+            console.error('Logout API error:', err);
+        }
         this.clear();
-        // Navigate to root index
         const path = window.location.pathname;
         if (path.includes('/student/') || path.includes('/faculty/')) {
             window.location.href = '../index.html';

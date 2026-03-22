@@ -1,15 +1,20 @@
 // ============================================================
 // dashboard.js — Shared dashboard rendering logic
 // Populates header, timetable, assignments, clock
+// ALL async operations properly awaited
 // ============================================================
 
 const Dashboard = {
     session: null,
 
-    init(role) {
-        this.session = Session.get();
+    async init(role) {
+        // Wait for dataStore initialization
+        await dataStore.ready();
+
+        // Load session from backend
+        this.session = await Session.load();
         if (!this.session || this.session.role !== role) {
-            Session.requireAuth(role);
+            await Session.requireAuth(role);
             return;
         }
 
@@ -17,14 +22,14 @@ const Dashboard = {
         UIHelpers.startClock();
 
         if (role === 'student') {
-            this._renderStudentDashboard();
+            await this._renderStudentDashboard();
         } else {
-            this._renderFacultyDashboard();
+            await this._renderFacultyDashboard();
         }
     },
 
     // ---- Student Dashboard ----
-    _renderStudentDashboard() {
+    async _renderStudentDashboard() {
         const student = dataStore.getStudentById(this.session.id);
         if (!student) return;
 
@@ -33,18 +38,18 @@ const Dashboard = {
         if (welcomeEl) welcomeEl.textContent = `Welcome back, ${student.firstName}!`;
 
         // Attendance display
-        this._renderStudentAttendanceCard(student);
+        await this._renderStudentAttendanceCard(student);
 
         // Today's timetable
-        this._renderTodayTimetable(student);
+        await this._renderTodayTimetable(student);
 
         // Upcoming assignments
         this._renderUpcomingAssignments();
     },
 
-    _renderStudentAttendanceCard(student) {
+    async _renderStudentAttendanceCard(student) {
         const semKey = `Semester ${student.semester}`;
-        const attendance = dataStore.getAttendance(student.id, semKey);
+        const attendance = await dataStore.getAttendance(student.id, semKey);
         if (!attendance) return;
 
         let totalAttended = 0, totalClasses = 0;
@@ -71,9 +76,9 @@ const Dashboard = {
         }
     },
 
-    _renderTodayTimetable(student) {
+    async _renderTodayTimetable(student) {
         const semKey = `Semester ${student.semester}`;
-        const timetable = dataStore.getTimetable(semKey);
+        const timetable = await dataStore.getTimetable(semKey);
         const container = document.getElementById('today-timetable');
         if (!container || !timetable) {
             if (container) container.innerHTML = '<p style="opacity:0.7;font-size:0.9rem;color:var(--text-color);">No timetable data available</p>';
@@ -136,7 +141,7 @@ const Dashboard = {
     },
 
     // ---- Faculty Dashboard ----
-    _renderFacultyDashboard() {
+    async _renderFacultyDashboard() {
         const faculty = dataStore.getFacultyById(this.session.id);
         if (!faculty) return;
 
@@ -148,17 +153,17 @@ const Dashboard = {
         }
 
         // Today's classes
-        this._renderFacultyTodayClasses();
+        await this._renderFacultyTodayClasses();
 
         // Reminders
-        this._renderReminders(faculty.id);
+        await this._renderReminders(faculty.id);
     },
 
-    _renderFacultyTodayClasses() {
+    async _renderFacultyTodayClasses() {
         const container = document.getElementById('today-timetable');
         if (!container) return;
 
-        const classes = dataStore.getFacultyTimetable();
+        const classes = await dataStore.getFacultyTimetable();
         const classesTodayEl = document.getElementById('classes-today');
         if (classesTodayEl) classesTodayEl.textContent = classes.length;
 
@@ -175,19 +180,20 @@ const Dashboard = {
         }
     },
 
-    _renderReminders(facultyId) {
+    async _renderReminders(facultyId) {
         const container = document.getElementById('reminders-list');
         if (!container) return;
 
-        const reminders = dataStore.getReminders(facultyId)
-            .sort((a, b) => new Date(a.date) - new Date(b.date));
+        const reminders = await dataStore.getReminders(facultyId);
+        const sorted = reminders.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        if (reminders.length === 0) {
+        if (sorted.length === 0) {
             container.innerHTML = '<p style="opacity:0.7;font-size:0.9rem;color:var(--text-color);text-align:center;padding:1rem;">No reminders yet</p>';
             return;
         }
 
-        container.innerHTML = reminders.map(r => {
+        container.innerHTML = sorted.map(r => {
+            const reminderId = r._id || r.id;
             const daysUntil = DateUtils.daysUntil(r.date);
             let statusText, statusColor;
 
@@ -205,7 +211,7 @@ const Dashboard = {
                             <p style="font-size:0.85rem;opacity:0.8;margin:0.3rem 0;"><i class="fas fa-calendar"></i> ${DateUtils.format(r.date)}</p>
                             ${r.description ? `<p style="font-size:0.85rem;opacity:0.7;margin-top:0.5rem;">${r.description}</p>` : ''}
                         </div>
-                        <button onclick="Dashboard.deleteReminder(${r.id})" style="background:#ff6b6b;color:white;border:none;padding:0.4rem 0.6rem;border-radius:6px;cursor:pointer;font-size:0.8rem;margin-left:0.5rem;">
+                        <button onclick="Dashboard.deleteReminder('${reminderId}')" style="background:#ff6b6b;color:white;border:none;padding:0.4rem 0.6rem;border-radius:6px;cursor:pointer;font-size:0.8rem;margin-left:0.5rem;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -215,7 +221,7 @@ const Dashboard = {
     },
 
     // ---- Reminder CRUD ----
-    addReminder() {
+    async addReminder() {
         const title = document.getElementById('reminder-title')?.value.trim();
         const date = document.getElementById('reminder-date')?.value;
         const description = document.getElementById('reminder-desc')?.value.trim();
@@ -225,7 +231,7 @@ const Dashboard = {
             return;
         }
 
-        dataStore.addReminder({
+        await dataStore.addReminder({
             title,
             date,
             description,
@@ -236,13 +242,13 @@ const Dashboard = {
         document.getElementById('reminder-date').value = '';
         document.getElementById('reminder-desc').value = '';
 
-        this._renderReminders(this.session?.id);
+        await this._renderReminders(this.session?.id);
         Toast.success('Reminder added!');
     },
 
-    deleteReminder(id) {
-        dataStore.deleteReminder(id);
-        this._renderReminders(this.session?.id);
+    async deleteReminder(id) {
+        await dataStore.deleteReminder(id);
+        await this._renderReminders(this.session?.id);
         Toast.info('Reminder deleted');
     }
 };

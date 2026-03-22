@@ -40,10 +40,13 @@
     <script src="../js/data.js"></script>
     <script src="../js/utils.js"></script>
     <script>
-        const session = Session.requireAuth('faculty');
-        if (session) {
+        (async () => {
+            await dataStore.ready();
+            const session = await Session.requireAuth('faculty');
+            if (!session) return;
+
             UIHelpers.populateHeader(session);
-            const classes = dataStore.getFacultyTimetable();
+            const classes = await dataStore.getFacultyTimetable();
             const container = document.getElementById('faculty-schedule');
 
             if (classes.length === 0) {
@@ -58,7 +61,7 @@
                     </div>
                 `).join('');
             }
-        }
+        })();
     </script>
 </body>
 </html>
