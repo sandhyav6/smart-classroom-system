@@ -106,8 +106,11 @@
     <script src="../js/utils.js"></script>
 
     <script>
-        const session = Session.requireAuth('faculty');
-        if (session) UIHelpers.populateHeader(session);
+        (async () => {
+            await dataStore.ready();
+            const session = await Session.requireAuth('faculty');
+            if (session) UIHelpers.populateHeader(session);
+        })();
 
         const MarksEditor = {
             currentStudents: [],
@@ -123,7 +126,7 @@
                 this.loadAssessment();
             },
 
-            loadAssessment() {
+            async loadAssessment() {
                 this.currentAssessment = document.getElementById('marks-assessment-select')?.value || '';
                 const tableWrapper = document.getElementById('marks-table-wrapper');
                 const saveBtn = document.getElementById('save-marks-btn');
@@ -143,15 +146,15 @@
                 const maxMarks = { da1: 10, da2: 10, da3: 10, cat1: 50, cat2: 50, fat: 100 };
                 const max = maxMarks[this.currentAssessment] || 100;
 
-                // Load existing marks
-                this.currentStudents.forEach(s => {
+                // Load existing marks (async)
+                for (const s of this.currentStudents) {
                     const semKey = `Semester ${s.semester}`;
-                    const marks = dataStore.getMarks(s.id, semKey);
+                    const marks = await dataStore.getMarks(s.id, semKey);
                     const firstSubject = marks?.[0];
                     if (firstSubject) {
                         this.marksState[s.id] = firstSubject[this.currentAssessment] || 0;
                     }
-                });
+                }
 
                 this.renderTable(this.currentStudents, max);
 
@@ -208,17 +211,17 @@
                 this.marksState[studentId] = val;
             },
 
-            saveMarks() {
+            async saveMarks() {
                 const assessment = this.currentAssessment;
                 if (!assessment) return;
 
-                this.currentStudents.forEach(s => {
+                for (const s of this.currentStudents) {
                     const semKey = `Semester ${s.semester}`;
-                    const marks = dataStore.getMarks(s.id, semKey);
+                    const marks = await dataStore.getMarks(s.id, semKey);
                     if (marks && marks[0]) {
-                        dataStore.updateMarks(s.id, semKey, marks[0].code, assessment, this.marksState[s.id] || 0);
+                        await dataStore.updateMarks(s.id, semKey, marks[0].code, assessment, this.marksState[s.id] || 0);
                     }
-                });
+                }
 
                 Toast.success(`Marks saved for ${this.currentStudents.length} students!`);
             }
