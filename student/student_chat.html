@@ -63,8 +63,11 @@
     <script src="../js/data.js"></script>
     <script src="../js/utils.js"></script>
     <script>
-        const session = Session.requireAuth('student');
-        if (session) {
+        (async () => {
+            await dataStore.ready();
+            const session = await Session.requireAuth('student');
+            if (!session) return;
+
             UIHelpers.populateHeader(session);
             const faculty = dataStore.getFaculty();
             let currentTeacher = null;
@@ -88,7 +91,7 @@
             renderTeachers();
             document.getElementById('teacher-search').oninput = SearchUtils.debounce(e => renderTeachers(e.target.value), 250);
 
-            window.openChat = function(facultyId) {
+            window.openChat = async function(facultyId) {
                 currentTeacher = dataStore.getFacultyById(facultyId);
                 if (!currentTeacher) return;
                 document.getElementById('teacher-list-view').classList.add('hidden');
@@ -96,15 +99,16 @@
                 document.getElementById('chat-teacher-name').textContent = currentTeacher.name;
                 document.getElementById('chat-teacher-subject').textContent = currentTeacher.subjects.join(', ');
 
-                const msgs = dataStore.getChatMessages(`${session.id}_${facultyId}`);
+                const chatKey = `${session.id}_${facultyId}`;
+                let msgs = await dataStore.getChatMessages(chatKey);
                 renderMessages(msgs);
 
                 if (msgs.length === 0) {
-                    // Auto greeting
-                    dataStore.addChatMessage(`${session.id}_${facultyId}`, {
+                    await dataStore.addChatMessage(chatKey, {
                         from: 'teacher', text: `Hello! I'm ${currentTeacher.name}. How can I help you today?`
                     });
-                    renderMessages(dataStore.getChatMessages(`${session.id}_${facultyId}`));
+                    msgs = await dataStore.getChatMessages(chatKey);
+                    renderMessages(msgs);
                 }
             };
 
@@ -118,19 +122,20 @@
                 container.scrollTop = container.scrollHeight;
             }
 
-            window.sendMessage = function() {
+            window.sendMessage = async function() {
                 const input = document.getElementById('chat-msg-input');
                 const text = input.value.trim();
                 if (!text || !currentTeacher) return;
 
                 const chatKey = `${session.id}_${currentTeacher.id}`;
-                dataStore.addChatMessage(chatKey, { from: 'student', text });
+                await dataStore.addChatMessage(chatKey, { from: 'student', text });
                 input.value = '';
 
-                renderMessages(dataStore.getChatMessages(chatKey));
+                let msgs = await dataStore.getChatMessages(chatKey);
+                renderMessages(msgs);
 
                 // Simulate teacher response after delay
-                setTimeout(() => {
+                setTimeout(async () => {
                     const responses = [
                         "That's a great question! Let me explain...",
                         "Please refer to the study materials for this topic.",
@@ -142,8 +147,9 @@
                         "I appreciate your initiative. Feel free to ask more questions."
                     ];
                     const reply = responses[Math.floor(Math.random() * responses.length)];
-                    dataStore.addChatMessage(chatKey, { from: 'teacher', text: reply });
-                    renderMessages(dataStore.getChatMessages(chatKey));
+                    await dataStore.addChatMessage(chatKey, { from: 'teacher', text: reply });
+                    const updated = await dataStore.getChatMessages(chatKey);
+                    renderMessages(updated);
                 }, 1000 + Math.random() * 2000);
             };
 
@@ -152,7 +158,7 @@
                 document.getElementById('teacher-list-view').classList.remove('hidden');
                 currentTeacher = null;
             };
-        }
+        })();
     </script>
 </body>
 </html>

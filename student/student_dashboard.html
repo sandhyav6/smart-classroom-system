@@ -95,14 +95,9 @@
         // Initialize dashboard
         Dashboard.init('student');
 
-        // QR Scanner
+        // QR Scanner — navigate to real attendance marking page
         function openQRScanner() {
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            if (isMobile) {
-                Toast.info('QR Scanner would open here on mobile device');
-            } else {
-                Toast.warning('QR code scanning is only available on mobile devices');
-            }
+            Nav.to('student_mark_attendance.html');
         }
     </script>
 </body>
