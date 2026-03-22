@@ -1,6 +1,7 @@
 // ============================================================
 // assignments.js — Assignment management for Smart Classroom
 // Student: view/submit; Faculty: CRUD + view submissions
+// ALL async operations properly awaited
 // ============================================================
 
 const AssignmentManager = {
@@ -8,10 +9,12 @@ const AssignmentManager = {
     currentAssignment: null,
 
     // ---- Initialize ----
-    init(role) {
-        this.session = Session.get();
+    async init(role) {
+        await dataStore.ready();
+
+        this.session = await Session.load();
         if (!this.session) {
-            Session.requireAuth(role);
+            await Session.requireAuth(role);
             return;
         }
         UIHelpers.populateHeader(this.session);
@@ -51,7 +54,7 @@ const AssignmentManager = {
         }
     },
 
-    renderStudentAssignments() {
+    async renderStudentAssignments() {
         const selectedSubject = document.getElementById('subject-filter')?.value;
         const displayContainer = document.getElementById('assignments-display');
         const upcomingEl = document.getElementById('upcoming-assignments');
@@ -73,9 +76,9 @@ const AssignmentManager = {
         const assignments = dataStore.getAssignmentsByCourse(selectedSubject);
         const today = new Date();
 
-        assignments.forEach(a => {
+        for (const a of assignments) {
             const dueDate = new Date(a.dueDate);
-            const submission = dataStore.getSubmission(this.session.id, a.id);
+            const submission = await dataStore.getSubmission(this.session.id, a.id);
             const isCompleted = !!submission;
             const isPastDue = dueDate < today && !isCompleted;
 
@@ -105,7 +108,7 @@ const AssignmentManager = {
             } else if (upcomingEl) {
                 upcomingEl.innerHTML += card;
             }
-        });
+        }
 
         // Empty messages
         if (upcomingEl && !upcomingEl.innerHTML) upcomingEl.innerHTML = '<p style="color:var(--text-color);opacity:0.7;">No upcoming assignments</p>';
@@ -113,7 +116,7 @@ const AssignmentManager = {
         if (completedEl && !completedEl.innerHTML) completedEl.innerHTML = '<p style="color:var(--text-color);opacity:0.7;">No completed assignments</p>';
     },
 
-    showDetail(assignmentId) {
+    async showDetail(assignmentId) {
         this.currentAssignment = dataStore.getAssignmentById(assignmentId);
         if (!this.currentAssignment) return;
 
@@ -136,8 +139,8 @@ const AssignmentManager = {
         const descEl = document.getElementById('detail-description');
         if (descEl) descEl.innerHTML = a.detailedDescription.replace(/\n/g, '<br>');
 
-        // Check submission status
-        const submission = dataStore.getSubmission(this.session.id, a.id);
+        // Check submission status (async)
+        const submission = await dataStore.getSubmission(this.session.id, a.id);
         const submissionDetailsEl = document.getElementById('submission-details-section');
         const submitSectionEl = document.getElementById('submit-section');
 
@@ -168,7 +171,7 @@ const AssignmentManager = {
         this.currentAssignment = null;
     },
 
-    submitAssignment() {
+    async submitAssignment() {
         const fileInput = document.getElementById('assignment-file-input');
         const statusDiv = document.getElementById('submission-status');
 
@@ -180,7 +183,7 @@ const AssignmentManager = {
         if (!this.currentAssignment) return;
 
         const fileName = fileInput.files[0].name;
-        dataStore.submitAssignment(this.session.id, this.currentAssignment.id, fileName);
+        await dataStore.submitAssignment(this.session.id, this.currentAssignment.id, fileName);
 
         if (statusDiv) {
             statusDiv.innerHTML = `<span style="color:#264508;"><i class="fas fa-check-circle"></i> Assignment submitted successfully! File: ${fileName}</span>`;
@@ -272,7 +275,7 @@ const AssignmentManager = {
         if (form) form.style.display = 'none';
     },
 
-    createAssignment() {
+    async createAssignment() {
         const title = document.getElementById('new-title')?.value.trim();
         const course = document.getElementById('new-course')?.value.trim();
         const courseCode = document.getElementById('new-code')?.value.trim();
@@ -285,7 +288,7 @@ const AssignmentManager = {
             return;
         }
 
-        dataStore.addAssignment({
+        await dataStore.addAssignment({
             title,
             course,
             courseCode: courseCode || 'CSE000',
@@ -302,7 +305,7 @@ const AssignmentManager = {
     },
 
     // ---- Edit Assignment ----
-    editAssignment(id) {
+    async editAssignment(id) {
         const assignment = dataStore.getAssignmentById(id);
         if (!assignment) return;
 
@@ -312,7 +315,7 @@ const AssignmentManager = {
         const newDueDate = prompt('Edit due date (YYYY-MM-DD):', assignment.dueDate);
         if (newDueDate === null) return;
 
-        dataStore.updateAssignment(id, {
+        await dataStore.updateAssignment(id, {
             title: newTitle || assignment.title,
             dueDate: newDueDate || assignment.dueDate
         });
@@ -322,9 +325,9 @@ const AssignmentManager = {
     },
 
     // ---- Delete Assignment ----
-    deleteAssignment(id) {
+    async deleteAssignment(id) {
         if (confirm('Are you sure you want to delete this assignment?')) {
-            dataStore.deleteAssignment(id);
+            await dataStore.deleteAssignment(id);
             Toast.info('Assignment deleted');
             this._renderFacultyAssignments();
         }
