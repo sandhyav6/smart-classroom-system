@@ -24,14 +24,14 @@
             <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_timetable.html')"><i class="fas fa-table"></i> Timetable</a>
             <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_assignments.html')"><i class="fas fa-tasks"></i> Assignments</a>
             <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_chat.html')"><i class="fas fa-comments"></i> Chat with Students</a>
-            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_marks.html')"><i class="fas fa-chart-bar"></i> Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_marks.html')"><i class="fas fa-chart-bar"></i> Marks &amp; Results</a>
             <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_materials.html')"><i class="fas fa-book"></i> Upload Materials</a>
             <a href="#" class="nav-item" style="color: #ff6b6b;" onclick="Session.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </nav>
         <main class="main-content" style="display:flex;justify-content:center;align-items:center;">
             <div class="marks-container" style="text-align:center;max-width:600px;">
                 <h2><i class="fas fa-qrcode"></i> Generate Attendance QR Code</h2>
-                <p style="margin:1rem 0;opacity:0.8;">Select a class to generate a time-limited QR code for attendance</p>
+                <p style="margin:1rem 0;opacity:0.8;">Select a class to generate a time-limited QR code and mark all students present via the backend.</p>
 
                 <div style="display:flex;gap:1rem;justify-content:center;margin:2rem 0;flex-wrap:wrap;">
                     <select id="qr-class" style="padding:0.8rem 1.5rem;border-radius:10px;border:2px solid var(--glass-border);background:var(--glass-bg);color:var(--text-color);font-size:1rem;font-weight:600;">
@@ -40,7 +40,7 @@
                         <option value="CSE-2B">CSE-2B - Algorithms</option>
                         <option value="CSE-3A">CSE-3A - Database Systems</option>
                     </select>
-                    <button onclick="generateQR()" style="background:linear-gradient(135deg, #264508, #3d6b0f);color:white;border:none;padding:0.8rem 2rem;border-radius:10px;cursor:pointer;font-weight:700;font-size:1rem;">
+                    <button id="gen-qr-btn" onclick="generateQR()" style="background:linear-gradient(135deg, #264508, #3d6b0f);color:white;border:none;padding:0.8rem 2rem;border-radius:10px;cursor:pointer;font-weight:700;font-size:1rem;">
                         <i class="fas fa-qrcode"></i> Generate QR
                     </button>
                 </div>
@@ -57,6 +57,7 @@
                         <p style="color:#ff6b6b;font-weight:600;margin-top:0.5rem;">
                             <i class="fas fa-clock"></i> Expires in: <span id="qr-countdown">5:00</span>
                         </p>
+                        <div id="qr-status" style="margin-top:1rem;"></div>
                     </div>
                 </div>
             </div>
@@ -66,19 +67,30 @@
     <script src="../js/data.js"></script>
     <script src="../js/utils.js"></script>
     <script>
-        const session = Session.requireAuth('faculty');
-        if (session) UIHelpers.populateHeader(session);
+        (async () => {
+            await dataStore.ready();
+            const session = await Session.requireAuth('faculty');
+            if (session) UIHelpers.populateHeader(session);
+        })();
 
         let countdownInterval;
 
-        function generateQR() {
+        async function generateQR() {
             const cls = document.getElementById('qr-class').value;
             if (!cls) { Toast.warning('Please select a class'); return; }
 
+            const btn = document.getElementById('gen-qr-btn');
             const display = document.getElementById('qr-display');
+            const statusDiv = document.getElementById('qr-status');
+
+            // Disable button during processing
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            statusDiv.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Marking attendance for all students in class...</p>';
+
             display.style.display = 'block';
 
-            // Generate random QR-like grid
+            // Generate QR-like visual grid
             const grid = document.getElementById('qr-grid');
             grid.innerHTML = '';
             for (let i = 0; i < 25; i++) {
@@ -91,7 +103,63 @@
             document.getElementById('qr-class-label').textContent = cls;
             document.getElementById('qr-time-label').textContent = `Generated: ${DateUtils.getCurrentDateTimeStrings().time}`;
 
-            // Countdown timer
+            // REAL: Mark attendance for all students in the selected class via backend
+            try {
+                const students = dataStore.getStudentsBySection(cls);
+                const today = new Date().toISOString().split('T')[0];
+                let successCount = 0;
+                let errorCount = 0;
+
+                // Determine subject based on class selection
+                const subjectMap = {
+                    'CSE-2A': 'DATA STRUCTURES',
+                    'CSE-2B': 'DESIGN & ANALYSIS ALGOS',
+                    'CSE-3A': 'COMPUTER ARCHITECTURE'
+                };
+                const subject = subjectMap[cls] || 'DATA STRUCTURES';
+
+                for (const student of students) {
+                    try {
+                        const semKey = `Semester ${student.semester}`;
+                        await dataStore.updateAttendance(student.id, semKey, subject, today, true);
+                        successCount++;
+                    } catch (err) {
+                        errorCount++;
+                        console.error(`Failed for ${student.id}:`, err);
+                    }
+                }
+
+                if (errorCount === 0) {
+                    statusDiv.innerHTML = `
+                        <div style="background:rgba(40,167,69,0.1);border:2px solid #28a745;border-radius:12px;padding:1rem;">
+                            <i class="fas fa-check-circle" style="color:#28a745;"></i>
+                            <strong style="color:#28a745;">Attendance marked for ${successCount} students</strong>
+                        </div>
+                    `;
+                    Toast.success(`QR code generated & attendance marked for ${successCount} students in ${cls}`);
+                } else {
+                    statusDiv.innerHTML = `
+                        <div style="background:rgba(255,200,0,0.1);border:2px solid #feca57;border-radius:12px;padding:1rem;">
+                            <i class="fas fa-exclamation-triangle" style="color:#feca57;"></i>
+                            <strong>Marked: ${successCount} | Failed: ${errorCount}</strong>
+                        </div>
+                    `;
+                    Toast.warning(`Attendance partially marked: ${successCount} OK, ${errorCount} failed`);
+                }
+            } catch (err) {
+                statusDiv.innerHTML = `
+                    <div style="background:rgba(255,0,0,0.1);border:2px solid #ff0000;border-radius:12px;padding:1rem;">
+                        <i class="fas fa-times-circle" style="color:#ff0000;"></i>
+                        <strong style="color:#ff0000;">Failed to mark attendance: ${err.message}</strong>
+                    </div>
+                `;
+                Toast.error('Failed to mark attendance');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-qrcode"></i> Generate QR';
+            }
+
+            // Countdown timer for QR expiry
             if (countdownInterval) clearInterval(countdownInterval);
             let seconds = 300;
             const countdownEl = document.getElementById('qr-countdown');
@@ -108,8 +176,6 @@
                     Toast.warning('QR code expired. Generate a new one.');
                 }
             }, 1000);
-
-            Toast.success(`QR code generated for ${cls}`);
         }
     </script>
 </body>

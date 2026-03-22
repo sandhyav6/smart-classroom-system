@@ -1,22 +1,25 @@
 // ============================================================
 // attendance.js — Attendance system for Smart Classroom
 // Student view: records display; Faculty view: mark attendance
+// ALL async operations properly awaited
 // ============================================================
 
 const AttendanceManager = {
     session: null,
 
     // ---- Initialize ----
-    init(role) {
-        this.session = Session.get();
+    async init(role) {
+        await dataStore.ready();
+
+        this.session = await Session.load();
         if (!this.session) {
-            Session.requireAuth(role);
+            await Session.requireAuth(role);
             return;
         }
         UIHelpers.populateHeader(this.session);
 
         if (role === 'student') {
-            this._initStudentView();
+            await this._initStudentView();
         } else {
             this._initFacultyView();
         }
@@ -25,7 +28,7 @@ const AttendanceManager = {
     // ============================================================
     // STUDENT VIEW
     // ============================================================
-    _initStudentView() {
+    async _initStudentView() {
         const student = dataStore.getStudentById(this.session.id);
         if (!student) return;
 
@@ -42,18 +45,18 @@ const AttendanceManager = {
             }
             semSelect.onchange = () => this.renderStudentAttendance();
         }
-        this.renderStudentAttendance();
+        await this.renderStudentAttendance();
     },
 
-    renderStudentAttendance() {
+    async renderStudentAttendance() {
         const semSelect = document.getElementById('attendance-sem-select');
         const sem = semSelect?.value || 'Semester 1';
         const tbody = document.getElementById('attendance-body');
         if (!tbody) return;
 
         tbody.innerHTML = '';
-        const attendance = dataStore.getAttendance(this.session.id, sem);
-        if (!attendance) {
+        const attendance = await dataStore.getAttendance(this.session.id, sem);
+        if (!attendance || Object.keys(attendance).length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No attendance records found.</td></tr>';
             return;
         }
@@ -82,9 +85,9 @@ const AttendanceManager = {
         });
     },
 
-    showDetail(subName) {
+    async showDetail(subName) {
         const sem = document.getElementById('attendance-sem-select')?.value || 'Semester 1';
-        const attendance = dataStore.getAttendance(this.session.id, sem);
+        const attendance = await dataStore.getAttendance(this.session.id, sem);
         const subData = attendance?.[subName];
         if (!subData) return;
 
@@ -251,7 +254,7 @@ const AttendanceManager = {
         Toast.info('All marked absent');
     },
 
-    submitAttendance() {
+    async submitAttendance() {
         const classSelected = document.getElementById('class-select')?.value;
         const date = document.getElementById('attendance-date')?.value;
 
@@ -261,17 +264,17 @@ const AttendanceManager = {
         }
 
         const students = dataStore.getStudentsBySection(classSelected);
-        students.forEach(student => {
+        for (const student of students) {
             const isPresent = this._attendanceState[classSelected]?.[student.id] ?? true;
             const semKey = `Semester ${student.semester}`;
-            const attendance = dataStore.getAttendance(student.id, semKey);
+            const attendance = await dataStore.getAttendance(student.id, semKey);
             if (attendance) {
                 const firstSubject = Object.keys(attendance)[0];
                 if (firstSubject) {
-                    dataStore.updateAttendance(student.id, semKey, firstSubject, date, isPresent);
+                    await dataStore.updateAttendance(student.id, semKey, firstSubject, date, isPresent);
                 }
             }
-        });
+        }
 
         Toast.success(`Attendance submitted for ${classSelected} on ${DateUtils.format(date)}!`);
     },
