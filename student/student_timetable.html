@@ -45,8 +45,11 @@
     <script src="../js/data.js"></script>
     <script src="../js/utils.js"></script>
     <script>
-        const session = Session.requireAuth('student');
-        if (session) {
+        (async () => {
+            await dataStore.ready();
+            const session = await Session.requireAuth('student');
+            if (!session) return;
+
             UIHelpers.populateHeader(session);
             const student = dataStore.getStudentById(session.id);
 
@@ -60,9 +63,9 @@
             }
             semSelect.onchange = renderTimetable;
 
-            function renderTimetable() {
+            async function renderTimetable() {
                 const sem = semSelect.value;
-                const tt = dataStore.getTimetable(sem);
+                const tt = await dataStore.getTimetable(sem);
                 const container = document.getElementById('timetable-container');
 
                 if (!tt || !tt.schedule) {
@@ -93,8 +96,8 @@
                 html += '</div>';
                 container.innerHTML = html;
             }
-            renderTimetable();
-        }
+            await renderTimetable();
+        })();
     </script>
 </body>
 </html>

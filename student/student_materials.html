@@ -57,8 +57,11 @@
     <script src="../js/data.js"></script>
     <script src="../js/utils.js"></script>
     <script>
-        const session = Session.requireAuth('student');
-        if (session) {
+        (async () => {
+            await dataStore.ready();
+            const session = await Session.requireAuth('student');
+            if (!session) return;
+
             UIHelpers.populateHeader(session);
             const student = dataStore.getStudentById(session.id);
 
@@ -71,14 +74,14 @@
                 semSelect.appendChild(opt);
             }
 
-            window.loadSubjects = function() {
+            window.loadSubjects = async function() {
                 const sem = semSelect.value;
                 const subSelect = document.getElementById('mat-sub-select');
                 subSelect.innerHTML = '<option value="">-- Select Subject --</option>';
                 document.getElementById('mat-mod-select').innerHTML = '<option value="">-- Select Module --</option>';
                 document.getElementById('materials-list').innerHTML = '';
 
-                const subjects = dataStore.getMaterials(sem);
+                const subjects = await dataStore.getMaterials(sem);
                 subjects.forEach(sub => {
                     const opt = document.createElement('option');
                     opt.value = sub;
@@ -87,7 +90,7 @@
                 });
             };
 
-            window.loadModules = function() {
+            window.loadModules = async function() {
                 const sem = semSelect.value;
                 const sub = document.getElementById('mat-sub-select').value;
                 const modSelect = document.getElementById('mat-mod-select');
@@ -95,7 +98,7 @@
                 document.getElementById('materials-list').innerHTML = '';
 
                 if (!sub) return;
-                const modules = dataStore.getMaterials(sem, sub);
+                const modules = await dataStore.getMaterials(sem, sub);
                 modules.forEach(mod => {
                     const opt = document.createElement('option');
                     opt.value = mod;
@@ -104,7 +107,7 @@
                 });
             };
 
-            window.loadFiles = function() {
+            window.loadFiles = async function() {
                 const sem = semSelect.value;
                 const sub = document.getElementById('mat-sub-select').value;
                 const mod = document.getElementById('mat-mod-select').value;
@@ -112,26 +115,31 @@
 
                 if (!mod) { container.innerHTML = ''; return; }
 
-                const files = dataStore.getMaterials(sem, sub, mod);
+                const files = await dataStore.getMaterials(sem, sub, mod);
                 const icons = { pdf: 'fa-file-pdf', docx: 'fa-file-word', pptx: 'fa-file-powerpoint' };
                 const colors = { pdf: '#dc3545', docx: '#0d6efd', pptx: '#fd7e14' };
 
                 container.innerHTML = files.length === 0
                     ? '<p style="opacity:0.7;">No materials found</p>'
-                    : files.map(f => `
-                        <div class="class-detail-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer;" onclick="Toast.info('Download: ${f.name}')">
-                            <i class="fas ${icons[f.type] || 'fa-file'}" style="font-size:2rem;color:${colors[f.type] || 'var(--text-color)'};"></i>
-                            <div>
-                                <h4 style="margin:0;font-size:1rem;">${f.name}</h4>
-                                <p style="font-size:0.85rem;opacity:0.7;margin:0;">${f.type.toUpperCase()} • ${mod}</p>
+                    : files.map(f => {
+                        const downloadAction = f.placeholder
+                            ? `Toast.info('Placeholder: ${f.name}')`
+                            : `window.open('/api/materials/download/${f._id}', '_blank')`;
+                        return `
+                            <div class="class-detail-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer;" onclick="${downloadAction}">
+                                <i class="fas ${icons[f.type] || 'fa-file'}" style="font-size:2rem;color:${colors[f.type] || 'var(--text-color)'};"></i>
+                                <div>
+                                    <h4 style="margin:0;font-size:1rem;">${f.name}</h4>
+                                    <p style="font-size:0.85rem;opacity:0.7;margin:0;">${(f.type || '').toUpperCase()} • ${mod}</p>
+                                </div>
+                                <i class="fas fa-download" style="margin-left:auto;opacity:0.5;"></i>
                             </div>
-                            <i class="fas fa-download" style="margin-left:auto;opacity:0.5;"></i>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
             };
 
-            loadSubjects();
-        }
+            await loadSubjects();
+        })();
     </script>
 </body>
 </html>
