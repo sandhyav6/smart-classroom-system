@@ -53,10 +53,7 @@ app.use('/api/chat', require('./routes/chat'));
 app.use('/api/qr', require('./routes/qr-session'));
 app.use('/api', require('./routes/misc'));
 
-// ---- Metro Booking API Routes ----
-app.use('/api/users',    require('./routes/users'));
-app.use('/api/stations', require('./routes/stations'));
-app.use('/api/bookings', require('./routes/bookings'));
+
 
 // ---- Fallback: serve index.html for root ----
 app.get('/', (req, res) => {
