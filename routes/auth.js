@@ -27,18 +27,21 @@ router.post('/student-login', async (req, res) => {
 
         // Set session
         req.session.user = {
-            role: 'student',
-            id: student.id,
-            name: student.name,
-            firstName: student.firstName,
-            department: student.department,
-            semester: student.semester,
-            cgpa: student.cgpa
+            role: 'faculty',
+            id: faculty.id,
+            name: faculty.name,
+            department: faculty.department,
+            subjects: faculty.subjects
         };
 
-        res.json({
-            success: true,
-            user: req.session.user
+        req.session.save(err => {
+            if (err) {
+                return res.status(500).json({ error: 'Session save failed' });
+            }
+            res.json({
+                success: true,
+                user: req.session.user
+            });
         });
     } catch (err) {
         res.status(500).json({ error: 'Server error: ' + err.message });
