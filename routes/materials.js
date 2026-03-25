@@ -68,7 +68,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
             fileName: req.file.filename,
             originalName: req.file.originalname,
             filePath: req.file.path,
-            fileType: path.extname(req.file.originalname).replace('.', ''),
+            fileType: path.extname(req.file.originalname).replace('.', '').toLowerCase(),
             fileSize: req.file.size,
             uploadedBy: uploadedBy || 'unknown'
         });
@@ -80,7 +80,68 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     }
 });
 
-// GET /api/materials/:sem — Get subjects list OR uploaded files
+// ============================================================
+// IMPORTANT: specific named routes MUST come BEFORE /:sem/:sub?/:mod?
+// Otherwise Express matches the string as the :sem param.
+// ============================================================
+
+// GET /api/materials/by-faculty/:facultyId — list all uploads by a faculty member
+router.get('/by-faculty/:facultyId', async (req, res) => {
+    try {
+        const files = await Material.find({ uploadedBy: req.params.facultyId })
+            .sort({ uploadDate: -1 });
+        res.json(files.map(f => ({
+            _id: f._id,
+            name: f.originalName,
+            type: f.fileType,
+            fileName: f.fileName,
+            fileSize: f.fileSize,
+            semester: f.semester,
+            subject: f.subject,
+            module: f.module,
+            uploadDate: f.uploadDate
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// DELETE /api/materials/:id — delete a material record + file from disk
+router.delete('/:id', async (req, res) => {
+    try {
+        const material = await Material.findById(req.params.id);
+        if (!material) return res.status(404).json({ error: 'Material not found' });
+
+        // Delete physical file if it still exists
+        if (material.filePath && fs.existsSync(material.filePath)) {
+            fs.unlinkSync(material.filePath);
+        }
+
+        await Material.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/materials/download/:id — Download a file by its MongoDB _id
+router.get('/download/:id', async (req, res) => {
+    try {
+        const material = await Material.findById(req.params.id);
+        if (!material) return res.status(404).json({ error: 'File not found' });
+
+        const filePath = material.filePath;
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ error: 'File no longer exists on server' });
+        }
+
+        res.download(filePath, material.originalName);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/materials/:sem/:sub?/:mod? — List subjects / modules / files
 router.get('/:sem/:sub?/:mod?', async (req, res) => {
     try {
         const sem = decodeURIComponent(req.params.sem);
@@ -94,7 +155,7 @@ router.get('/:sem/:sub?/:mod?', async (req, res) => {
         }
 
         if (!mod) {
-            // Return list of modules (static + ones that have uploads)
+            // Return list of modules (static Modules 1-7 + any with uploads)
             const modules = [];
             for (let m = 1; m <= 7; m++) modules.push(`Module ${m}`);
             res.json(modules);
@@ -114,23 +175,6 @@ router.get('/:sem/:sub?/:mod?', async (req, res) => {
             uploadedBy: f.uploadedBy,
             uploadDate: f.uploadDate
         })));
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// GET /api/materials/download/:id — Download a file
-router.get('/download/:id', async (req, res) => {
-    try {
-        const material = await Material.findById(req.params.id);
-        if (!material) return res.status(404).json({ error: 'File not found' });
-
-        const filePath = material.filePath;
-        if (!fs.existsSync(filePath)) {
-            return res.status(404).json({ error: 'File no longer exists on server' });
-        }
-
-        res.download(filePath, material.originalName);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

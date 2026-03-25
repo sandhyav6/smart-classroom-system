@@ -12,7 +12,11 @@ const facultySchema = new mongoose.Schema({
     active: { type: Boolean, default: true },
     classes: [{
         section: String,
-        subject: String
+        subject: String,
+        semester: String,       // e.g. "Semester 3"
+        time: String,           // e.g. "09:00 - 10:00"
+        room: String,           // e.g. "AB1-201"
+        code: String            // Subject code
     }]
 }, { timestamps: true });
 
