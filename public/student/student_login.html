@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Login - VIT</title>
+    <meta name="description" content="Student login portal for VIT Smart Classroom System">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="center-container">
+        <div class="login-container">
+            <!-- QR attendance context banner (shown when redirected from QR scan) -->
+            <div id="qr-banner" style="display:none;background:linear-gradient(135deg,rgba(38,69,8,0.15),rgba(61,107,15,0.15));border:2px solid #264508;border-radius:12px;padding:0.8rem 1rem;margin-bottom:1.2rem;text-align:center;font-size:0.9rem;">
+                <i class="fas fa-qrcode" style="color:#264508;margin-right:0.4rem;"></i>
+                <strong>QR Attendance</strong> — Log in to mark your attendance automatically.
+            </div>
+            <h2>Student Login</h2>
+            <form id="studentLoginForm">
+                <div class="form-group">
+                    <label for="registration">Registration Number</label>
+                    <input type="text" id="registration" name="fullname" placeholder="e.g., 21BCE0001" required
+                        maxlength="10" autocomplete="off" style="text-transform: uppercase;">
+                    <span id="reg-error"
+                        style="color: #ff6b6b; font-size: 0.85rem; display: none; margin-top: 0.3rem;"></span>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter Password" required
+                        minlength="6" autocomplete="current-password">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; cursor: pointer;"
+                        onclick="togglePassword()">
+                        <i class="fas fa-eye" id="toggle-icon" style="color: var(--text-color);"></i>
+                        <span id="toggle-text" style="font-size: 0.9rem; color: var(--text-color); user-select: none;">Show
+                            Password</span>
+                    </div>
+                </div>
+
+                <div class="remember-me">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember" style="margin:0; opacity:1;">Remember me</label>
+                </div>
+
+                <button type="submit" class="btn-login">Login</button>
+
+                <div class="links">
+                    <a href="../forgot_password.html">Forgot Password?</a>
+                </div>
+            </form>
+
+            <!-- Demo credentials -->
+            <div class="demo-banner" onclick="LoginManager.showCredentials('student')">
+                <i class="fas fa-info-circle"></i> Click to see sample login credentials
+            </div>
+
+            <a href="../index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Home</a>
+        </div>
+    </div>
+
+    <!-- Credentials Modal -->
+    <div id="credentials-modal" class="credentials-modal">
+        <div class="credentials-modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">📚 Sample Credentials</h2>
+                <button class="modal-close" onclick="LoginManager.closeCredentials()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="credentials-list" class="credentials-list"></div>
+            </div>
+            <div class="modal-footer">
+                <p class="modal-hint">💡 Use any of these credentials to login. All passwords are shown above.</p>
+                <button class="btn-modal-close" onclick="LoginManager.closeCredentials()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core JS -->
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/login.js"></script>
+
+    <script>
+        const form = document.getElementById('studentLoginForm');
+        const regInput = document.getElementById('registration');
+        const regError = document.getElementById('reg-error');
+
+        // Real-time uppercase
+        regInput.addEventListener('input', () => {
+            regInput.value = regInput.value.toUpperCase();
+        });
+
+        // Close modal on background click
+        document.getElementById('credentials-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'credentials-modal') LoginManager.closeCredentials();
+        });
+
+        // Toggle password visibility
+        function togglePassword() {
+            const pwdInput = document.getElementById('password');
+            const icon = document.getElementById('toggle-icon');
+            const text = document.getElementById('toggle-text');
+
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                text.textContent = 'Hide Password';
+            } else {
+                pwdInput.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                text.textContent = 'Show Password';
+            }
+        }
+
+        // Handle form submission with login.js
+        form.addEventListener('submit', (e) => LoginManager.handleStudentLogin(e));
+
+        // Show QR banner when redirected from a QR scan
+        const _qrParams = new URLSearchParams(window.location.search);
+        if (_qrParams.get('returnUrl') && _qrParams.get('returnUrl').includes('token=')) {
+            document.getElementById('qr-banner').style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

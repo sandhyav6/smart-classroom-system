@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Timetable - VIT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand"><img src="../assets/logo.png" alt="VIT Logo"><h1>Vellore Institute of Technology</h1></div>
+        <div class="profile-section">
+            <div class="profile-info"><span class="name" id="profile-name">Faculty</span><span class="role">Faculty - Computer Science</span></div>
+            <img src="../assets/faculty_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_dashboard.html')"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_attendance.html')"><i class="fas fa-calendar-alt"></i> Attendance</a>
+            <a href="#" class="nav-item active"><i class="fas fa-table"></i> Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_assignments.html')"><i class="fas fa-tasks"></i> Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_chat.html')"><i class="fas fa-comments"></i> Chat with Students</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_marks.html')"><i class="fas fa-chart-bar"></i> Marks &amp; Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_materials.html')"><i class="fas fa-book"></i> Upload Materials</a>
+            <a href="#" class="nav-item" style="color: #ff6b6b;" onclick="Session.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+        <main class="main-content" style="display: block;">
+            <div class="marks-container">
+                <h2><i class="fas fa-table"></i> My Weekly Teaching Schedule</h2>
+                <p style="opacity:0.8;margin-bottom:1.5rem;">All your classes across the week</p>
+                <div id="timetable-output"><p style="opacity:0.6;"><i class="fas fa-spinner fa-spin"></i> Loading...</p></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+    const ALL_TIMES = ['09:00 - 09:50', '10:00 - 10:50', '11:00 - 11:50', '13:00 - 13:50', '14:00 - 14:50'];
+    const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    let allEntries = [];
+
+    (async () => {
+        await dataStore.ready();
+        const session = await Session.requireAuth('faculty');
+        if (!session) return;
+        UIHelpers.populateHeader(session);
+
+        const output = document.getElementById('timetable-output');
+        const allEntries = await dataStore.getFacultyTimetable(session.id);
+
+        if (!allEntries || allEntries.length === 0) {
+            output.innerHTML = '<p style="text-align:center;padding:2rem;opacity:0.7;">No classes found for your account.</p>';
+            return;
+        }
+
+        // Build a single unified grid: time → day → first entry
+        // Since seed data has no time conflicts, each slot has at most one class
+        const grid = {};
+        for (const time of ALL_TIMES) {
+            grid[time] = { Mon: null, Tue: null, Wed: null, Thu: null, Fri: null };
+        }
+        for (const e of allEntries) {
+            if (!e.day || !e.time || !grid[e.time] || grid[e.time][e.day]) continue;
+            grid[e.time][e.day] = e;
+        }
+
+        let html = '<div class="timetable-grid">';
+        html += '<div class="timetable-header">Time</div>';
+        DAYS.forEach(d => html += `<div class="timetable-header">${d}</div>`);
+
+        for (const time of ALL_TIMES) {
+            html += `<div class="timetable-time">${time}</div>`;
+            for (const day of DAYS) {
+                const e = grid[time][day];
+                if (e) {
+                    html += `
+                        <div class="timetable-cell has-class" onclick="Nav.to('faculty_attendance_qr.html')" title="Click to take attendance" style="cursor:pointer;">
+                            <div class="class-name">${e.subject || e.name}</div>
+                            <div class="class-code">${e.code || ''}</div>
+                            <div style="font-size:0.7rem;font-weight:700;opacity:0.9;margin-top:0.15rem;">Sec ${e.section} &middot; ${e.semester}</div>
+                            <div class="class-location"><i class="fas fa-map-marker-alt"></i> ${e.room || e.location || ''}</div>
+                        </div>`;
+                } else {
+                    html += '<div class="timetable-cell empty">—</div>';
+                }
+            }
+        }
+        html += '</div>';
+        output.innerHTML = html;
+    })();
+    </script>
+</body>
+</html>

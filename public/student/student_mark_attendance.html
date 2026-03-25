@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Mark Attendance - VIT</title>
+    <meta name="description" content="Mark your attendance by scanning QR code - VIT Smart Classroom">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Mobile-first full-page layout — no sidebar */
+        body { min-height: 100vh; }
+
+        .attend-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem 1rem;
+        }
+
+        .attend-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            backdrop-filter: blur(16px);
+        }
+
+        .attend-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-bottom: 2rem;
+            opacity: 0.85;
+        }
+
+        .attend-logo img { height: 36px; width: auto; }
+        .attend-logo span { font-weight: 700; font-size: 1rem; }
+
+        .attend-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .attend-card h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+        }
+
+        .attend-subtitle {
+            opacity: 0.65;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Result cards */
+        .result-card {
+            border-radius: 18px;
+            padding: 2rem 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .result-ok  { background: rgba(40,167,69,0.1);  border: 2px solid #28a745; }
+        .result-warn { background: rgba(254,202,87,0.1); border: 2px solid #feca57; }
+        .result-err { background: rgba(255,107,107,0.1); border: 2px solid #ff6b6b; }
+
+        .result-ok  .ri { color: #28a745; }
+        .result-warn .ri { color: #feca57; }
+        .result-err .ri { color: #ff6b6b; }
+
+        .ri { font-size: 3.5rem; display: block; margin-bottom: 0.8rem; }
+
+        .result-card h3  { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.8rem; }
+        .result-card p   { font-size: 0.95rem; margin: 0.3rem 0; opacity: 0.85; }
+        .result-card .meta { font-size: 0.82rem; opacity: 0.6; margin-top: 0.8rem; }
+
+        .btn-primary {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.9rem 2rem;
+            background: linear-gradient(135deg, #264508, #3d6b0f);
+            color: white;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-primary:hover { opacity: 0.85; }
+
+        .btn-outline {
+            display: inline-block;
+            margin-top: 0.8rem;
+            padding: 0.7rem 1.6rem;
+            border: 2px solid var(--glass-border);
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover { background: var(--glass-bg); }
+
+        /* Spinner */
+        .spinner-area { padding: 2rem; }
+        .spinner-area i { font-size: 2.5rem; opacity: 0.5; margin-bottom: 0.8rem; display: block; }
+        .spinner-area p { opacity: 0.65; }
+
+        /* No-token instruction area */
+        .scan-instructions {
+            background: var(--glass-bg);
+            border: 2px dashed var(--glass-border);
+            border-radius: 18px;
+            padding: 2rem 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .scan-instructions i { font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 0.8rem; }
+        .scan-instructions p { opacity: 0.6; }
+
+        /* Profile strip */
+        .profile-strip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+        }
+        .profile-strip strong { font-weight: 700; }
+
+        @media (max-width: 480px) {
+            .attend-card { padding: 2rem 1.4rem; border-radius: 20px; }
+            .attend-card h1 { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="attend-page">
+        <div class="attend-card">
+            <!-- Logo -->
+            <div class="attend-logo">
+                <img src="../assets/logo.png" alt="VIT Logo">
+                <span>Vellore Institute of Technology</span>
+            </div>
+
+            <!-- Profile strip (filled after auth) -->
+            <div id="profile-strip" class="profile-strip" style="display:none;">
+                <i class="fas fa-user-circle" style="color:#264508;"></i>
+                <span id="profile-name-text">Student</span>
+                &nbsp;·&nbsp;
+                <a href="student_dashboard.html" style="color:#264508;font-weight:600;text-decoration:none;">Dashboard</a>
+                &nbsp;·&nbsp;
+                <a href="#" onclick="Session.logout()" style="color:#ff6b6b;font-weight:600;text-decoration:none;">Logout</a>
+            </div>
+
+            <!-- Main content area -->
+            <i class="fas fa-qrcode attend-icon" style="color:#264508;"></i>
+            <h1>Mark Attendance</h1>
+            <p class="attend-subtitle" id="page-subtitle">Processing your QR code…</p>
+
+            <div id="result-area"></div>
+            <div id="manual-section" style="display:none;">
+                <div class="scan-instructions">
+                    <i class="fas fa-camera"></i>
+                    <p><strong>Scan the QR code</strong> shown on your faculty's screen or projector. The page will open automatically with the QR link.</p>
+                </div>
+                <p style="font-size:0.82rem;opacity:0.5;">The QR code is time-limited and valid for 5 minutes only.</p>
+                <a href="student_dashboard.html" class="btn-outline">
+                    <i class="fas fa-home"></i> Go to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+    (async () => {
+        await dataStore.ready();
+        const session = await Session.requireAuth('student');
+        if (!session) return;   // requireAuth will redirect (preserving returnUrl) if not logged in
+
+        // Show profile strip
+        document.getElementById('profile-strip').style.display = 'flex';
+        document.getElementById('profile-name-text').textContent = session.name || session.id;
+
+        const resultArea = document.getElementById('result-area');
+        const subtitle   = document.getElementById('page-subtitle');
+
+        // Read ?token= from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token     = urlParams.get('token');
+
+        if (!token) {
+            subtitle.textContent = 'No QR token found';
+            document.getElementById('manual-section').style.display = 'block';
+            return;
+        }
+
+        // Token found — auto-submit
+        subtitle.textContent = 'Marking your attendance…';
+        resultArea.innerHTML = `
+            <div class="spinner-area">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Contacting server…</p>
+            </div>`;
+
+        try {
+            const res = await fetch('/api/qr/scan', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ token, studentId: session.id })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                subtitle.textContent = '✅ Attendance marked!';
+                resultArea.innerHTML = `
+                    <div class="result-card result-ok">
+                        <i class="fas fa-check-circle ri"></i>
+                        <h3 style="color:#28a745;">Present ✔</h3>
+                        <p><strong>${data.subject}</strong></p>
+                        <p>${data.semester}</p>
+                        <p>Date: <strong>${data.date}</strong></p>
+                        <p class="meta">Marked for ${data.studentName || session.id}</p>
+                    </div>
+                    <a href="student_attendance.html" class="btn-primary">
+                        <i class="fas fa-chart-bar"></i> View My Attendance
+                    </a>
+                    <br>
+                    <a href="student_dashboard.html" class="btn-outline">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>`;
+
+            } else if (res.status === 409 && data.alreadyMarked) {
+                subtitle.textContent = 'Already marked';
+                resultArea.innerHTML = `
+                    <div class="result-card result-warn">
+                        <i class="fas fa-info-circle ri"></i>
+                        <h3 style="color:#feca57;">Already Marked</h3>
+                        <p>Your attendance for this class has already been recorded today.</p>
+                    </div>
+                    <a href="student_attendance.html" class="btn-primary">
+                        <i class="fas fa-chart-bar"></i> View My Attendance
+                    </a>`;
+
+            } else {
+                throw new Error(data.error || 'An error occurred');
+            }
+
+        } catch (err) {
+            subtitle.textContent = 'Failed to mark attendance';
+            resultArea.innerHTML = `
+                <div class="result-card result-err">
+                    <i class="fas fa-times-circle ri"></i>
+                    <h3 style="color:#ff6b6b;">Could Not Mark</h3>
+                    <p>${err.message}</p>
+                    <p class="meta">Ask your faculty to regenerate the QR if it has expired.</p>
+                </div>
+                <a href="student_dashboard.html" class="btn-outline">
+                    <i class="fas fa-home"></i> Go to Dashboard
+                </a>`;
+        }
+    })();
+    </script>
+</body>
+</html>

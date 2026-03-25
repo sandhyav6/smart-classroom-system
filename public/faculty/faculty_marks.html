@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Marks & Results - VIT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="../assets/logo.png" alt="VIT Logo">
+            <h1>Vellore Institute of Technology</h1>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <span class="name" id="profile-name">Faculty</span>
+                <span class="role">Faculty - Computer Science</span>
+            </div>
+            <img src="../assets/faculty_profile.png" alt="Profile" class="profile-img">
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_dashboard.html')"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_attendance.html')"><i class="fas fa-calendar-alt"></i> Attendance</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_timetable.html')"><i class="fas fa-table"></i> Timetable</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_assignments.html')"><i class="fas fa-tasks"></i> Assignments</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_chat.html')"><i class="fas fa-comments"></i> Chat with Students</a>
+            <a href="#" class="nav-item active"><i class="fas fa-chart-bar"></i> Marks & Results</a>
+            <a href="javascript:void(0)" class="nav-item" onclick="Nav.to('faculty_materials.html')"><i class="fas fa-book"></i> Upload Materials</a>
+            <a href="#" class="nav-item" style="color: #ff6b6b;" onclick="Session.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+
+        <main class="main-content" style="display: block; grid-template-columns: 1fr;">
+            <div class="marks-container">
+                <h2>Manage Marks & Results</h2>
+
+                <div class="filters" style="align-items: flex-end; gap: 1.5rem;">
+                    <div class="filter-group">
+                        <label>Select Class</label>
+                        <select id="marks-class-select" onchange="MarksEditor.loadClass()">
+                            <option value="">-- Select Class --</option>
+                            <option value="CSE-2A">CSE-2A (Section A)</option>
+                            <option value="CSE-2B">CSE-2B (Section B)</option>
+                            <option value="CSE-3A">CSE-3A (Section C)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Select Assessment</label>
+                        <select id="marks-assessment-select" onchange="MarksEditor.loadAssessment()">
+                            <option value="">-- Select Assessment --</option>
+                            <option value="da1">DA 1 (max: 10)</option>
+                            <option value="da2">DA 2 (max: 10)</option>
+                            <option value="da3">DA 3 (max: 10)</option>
+                            <option value="cat1">CAT 1 (max: 50)</option>
+                            <option value="cat2">CAT 2 (max: 50)</option>
+                            <option value="fat">FAT (max: 100)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div id="marks-search-container" style="display: none; margin: 1rem 0;">
+                    <div class="search-bar-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search student by name or ID..." id="faculty-marks-search">
+                    </div>
+                </div>
+
+                <!-- Marks Table -->
+                <div id="marks-table-wrapper" style="display: none; margin-top: 1rem;">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Reg. Number</th>
+                                    <th>Student Name</th>
+                                    <th>Marks</th>
+                                    <th>Max</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="marks-entry-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <button id="save-marks-btn" onclick="MarksEditor.saveMarks()" style="display: none;
+                    background: linear-gradient(135deg, #264508, #3d6b0f);
+                    color: white; border: none; padding: 1rem 2.5rem; border-radius: 12px;
+                    cursor: pointer; font-weight: 700; font-size: 1.1rem; margin-top: 1.5rem;
+                    box-shadow: 0 4px 15px rgba(38, 69, 8, 0.3);">
+                    <i class="fas fa-save"></i> Save All Marks
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/utils.js"></script>
+
+    <script>
+        (async () => {
+            await dataStore.ready();
+            const session = await Session.requireAuth('faculty');
+            if (session) UIHelpers.populateHeader(session);
+        })();
+
+        const MarksEditor = {
+            currentStudents: [],
+            currentClass: '',
+            currentAssessment: '',
+            marksState: {},
+
+            loadClass() {
+                const classSelect = document.getElementById('marks-class-select');
+                this.currentClass = classSelect.value;
+                this.currentStudents = this.currentClass ? dataStore.getStudentsBySection(this.currentClass) : [];
+                this.marksState = {};
+                this.loadAssessment();
+            },
+
+            async loadAssessment() {
+                this.currentAssessment = document.getElementById('marks-assessment-select')?.value || '';
+                const tableWrapper = document.getElementById('marks-table-wrapper');
+                const saveBtn = document.getElementById('save-marks-btn');
+                const searchContainer = document.getElementById('marks-search-container');
+
+                if (!this.currentClass || !this.currentAssessment || this.currentStudents.length === 0) {
+                    if (tableWrapper) tableWrapper.style.display = 'none';
+                    if (saveBtn) saveBtn.style.display = 'none';
+                    if (searchContainer) searchContainer.style.display = 'none';
+                    return;
+                }
+
+                if (tableWrapper) tableWrapper.style.display = 'block';
+                if (saveBtn) saveBtn.style.display = 'block';
+                if (searchContainer) searchContainer.style.display = 'block';
+
+                const maxMarks = { da1: 10, da2: 10, da3: 10, cat1: 50, cat2: 50, fat: 100 };
+                const max = maxMarks[this.currentAssessment] || 100;
+
+                // Load existing marks (async)
+                for (const s of this.currentStudents) {
+                    const semKey = `Semester ${s.semester}`;
+                    const marks = await dataStore.getMarks(s.id, semKey);
+                    const firstSubject = marks?.[0];
+                    if (firstSubject) {
+                        this.marksState[s.id] = firstSubject[this.currentAssessment] || 0;
+                    }
+                }
+
+                this.renderTable(this.currentStudents, max);
+
+                // Live search
+                const searchInput = document.getElementById('faculty-marks-search');
+                if (searchInput) {
+                    searchInput.oninput = SearchUtils.debounce((e) => {
+                        const q = e.target.value.toLowerCase();
+                        const filtered = q
+                            ? this.currentStudents.filter(s =>
+                                s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q))
+                            : this.currentStudents;
+                        this.renderTable(filtered, max);
+                    }, 250);
+                }
+            },
+
+            renderTable(students, max) {
+                const tbody = document.getElementById('marks-entry-body');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                if (students.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No students found</td></tr>';
+                    return;
+                }
+
+                students.forEach(s => {
+                    const currentMark = this.marksState[s.id] || 0;
+                    const pass = currentMark >= (max * 0.4);
+                    const statusText = pass ? 'Pass' : 'Fail';
+                    const statusClass = pass ? '' : 'status-fail';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${s.id}</td>
+                            <td style="font-weight:600;">${s.name}</td>
+                            <td>
+                                <input type="number" value="${currentMark}" min="0" max="${max}"
+                                    style="width: 80px; padding: 0.5rem; border: 2px solid var(--glass-border); border-radius: 8px; text-align: center; font-weight: 700; font-size: 1rem; background: var(--glass-bg); color: var(--text-color);"
+                                    onchange="MarksEditor.updateMark('${s.id}', this.value, ${max})">
+                            </td>
+                            <td>${max}</td>
+                            <td class="${statusClass}" style="font-weight:600;">${statusText}</td>
+                        </tr>
+                    `;
+                });
+            },
+
+            updateMark(studentId, value, max) {
+                let val = parseInt(value) || 0;
+                if (val > max) val = max;
+                if (val < 0) val = 0;
+                this.marksState[studentId] = val;
+            },
+
+            async saveMarks() {
+                const assessment = this.currentAssessment;
+                if (!assessment) return;
+
+                for (const s of this.currentStudents) {
+                    const semKey = `Semester ${s.semester}`;
+                    const marks = await dataStore.getMarks(s.id, semKey);
+                    if (marks && marks[0]) {
+                        await dataStore.updateMarks(s.id, semKey, marks[0].code, assessment, this.marksState[s.id] || 0);
+                    }
+                }
+
+                Toast.success(`Marks saved for ${this.currentStudents.length} students!`);
+            }
+        };
+    </script>
+</body>
+
+</html>
