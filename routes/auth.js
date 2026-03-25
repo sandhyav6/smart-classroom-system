@@ -27,11 +27,13 @@ router.post('/student-login', async (req, res) => {
 
         // Set session
         req.session.user = {
-            role: 'faculty',
-            id: faculty.id,
-            name: faculty.name,
-            department: faculty.department,
-            subjects: faculty.subjects
+            role: 'student',
+            id: student.id,
+            name: student.name,
+            firstName: student.firstName,
+            department: student.department,
+            semester: student.semester,
+            cgpa: student.cgpa
         };
 
         req.session.save(err => {

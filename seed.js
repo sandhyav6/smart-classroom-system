@@ -231,7 +231,9 @@ async function seed() {
 
         const dept = i < 35 ? "CSE" : DEPARTMENTS[rng.nextInt(0, DEPARTMENTS.length - 1)];
         const deptCode = DEPT_CODES[dept];
-        const year = 24;  // Fixed to 2024 batch
+
+        // Make student IDs deterministic so sample credentials always work
+        const year = 21;
         const rollNum = String(i + 1).padStart(4, '0');
         const regNo = `${year}${deptCode}${rollNum}`;
         const semester = rng.nextInt(1, 6);
@@ -277,24 +279,24 @@ async function seed() {
     // ---- 3. TIMETABLE ----
     console.log('📚 Creating timetable...');
     const timetableData = [];
-    
+
     for (let sem = 1; sem <= 4; sem++) {
         for (const section of ['A', 'B', 'C']) {
             const schedule = {};
             const semKey = `Semester ${sem}`;
             const subjects = SUBJECTS_DB[semKey] || [];
-            
+
             // Create a schedule with typical class times
             const timeSlots = ['09:00 - 09:50', '10:00 - 10:50', '11:00 - 11:50', '13:00 - 13:50', '14:00 - 14:50'];
             const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-            
+
             for (const slot of timeSlots) {
                 schedule[slot] = {};
                 for (const day of days) {
                     const subIdx = Math.floor(Math.random() * subjects.length);
                     const sub = subjects[subIdx];
                     const facIdx = Math.floor(Math.random() * faculty.length);
-                    
+
                     if (Math.random() > 0.3) {  // 70% chance of having a class
                         const code = `${sem}${String(subIdx + 1).padStart(2, '0')}`;
                         schedule[slot][day] = {
@@ -308,7 +310,7 @@ async function seed() {
                     }
                 }
             }
-            
+
             timetableData.push({
                 semester: semKey,
                 section,
@@ -445,13 +447,13 @@ async function seed() {
                 const internal = da1 + da2 + da3;
                 const cat1 = rng.nextInt(30, 50);
                 const cat2 = rng.nextInt(30, 50);
-                const fat  = rng.nextInt(50, 90);
+                const fat = rng.nextInt(50, 90);
 
                 let total = Math.floor(((internal + cat1 + cat2 + fat) / 230) * 100);
                 if (total > 100) total = 100;
 
                 let status = 'Pass';
-                let grade  = calcGrade(total);
+                let grade = calcGrade(total);
                 let remarks = 'Good';
 
                 if (rng.next() < 0.04) {
@@ -460,9 +462,9 @@ async function seed() {
 
                 marksDocs.push({
                     studentId: student.id,
-                    semester:  semKey,
-                    code:      subjectCode(sem, subIdx),  // unique per sem
-                    name:      subName,
+                    semester: semKey,
+                    code: subjectCode(sem, subIdx),  // unique per sem
+                    name: subName,
                     da1, da2, da3, internal,
                     cat1, cat2, fat,
                     total, grade, remarks, status
