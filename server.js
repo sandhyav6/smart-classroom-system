@@ -56,7 +56,6 @@ app.use('/api', require('./routes/misc'));
 // ---- Metro Booking API Routes ----
 app.use('/api/users',    require('./routes/users'));
 app.use('/api/stations', require('./routes/stations'));
-app.use('/api/routes',   require('./routes/metro-routes'));
 app.use('/api/bookings', require('./routes/bookings'));
 
 // ---- Fallback: serve index.html for root ----
