@@ -1,10 +1,10 @@
-# 🎓 Smart Classroom System
+# Smart Classroom System
 
-🌐 **Live Demo:** https://smart-classroom-system-etvl.onrender.com
+**Live Demo:** https://smart-classroom-system-etvl.onrender.com
 
 ---
 
-## 📌 Overview
+## Overview
 
 The **Smart Classroom System** is a full-stack web application designed to digitize and automate core classroom operations. It provides an integrated platform for **attendance tracking, assignment management, academic evaluation, communication, and resource sharing**.
 
@@ -12,9 +12,9 @@ The system supports **role-based access for students and faculty**, with a secur
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-### 🔐 Authentication System
+### Authentication System
 
 * Separate login portals for **Students** and **Faculty**
 * Session-based authentication (secure, server-side)
@@ -23,9 +23,9 @@ The system supports **role-based access for students and faculty**, with a secur
 
 ---
 
-### 📅 Attendance Management
+### Attendance Management
 
-#### 📱 QR-Based Attendance (Core Feature)
+#### QR-Based Attendance (Core Feature)
 
 * Faculty generates a **time-limited QR code** for each class
 * Students scan via their portal to mark attendance
@@ -36,7 +36,7 @@ The system supports **role-based access for students and faculty**, with a secur
   * no duplicate marking
 * Real-time tracking of scanned students
 
-#### 📝 Manual Attendance
+#### Manual Attendance
 
 * Faculty can mark attendance manually
 * Bulk marking (present/absent)
@@ -44,7 +44,7 @@ The system supports **role-based access for students and faculty**, with a secur
 
 ---
 
-### 📊 Marks & Evaluation System
+### Marks & Evaluation System
 
 * Faculty can enter marks for:
 
@@ -58,7 +58,7 @@ The system supports **role-based access for students and faculty**, with a secur
 
 ---
 
-### 📝 Assignment Management
+### Assignment Management
 
 * Faculty can:
 
@@ -72,7 +72,7 @@ The system supports **role-based access for students and faculty**, with a secur
 
 ---
 
-### 📁 Study Materials System
+### Study Materials System
 
 * Faculty can upload:
 
@@ -88,7 +88,7 @@ The system supports **role-based access for students and faculty**, with a secur
 
 ---
 
-### 💬 Chat System
+### Chat System
 
 * Student–Faculty communication system
 * Polling-based near real-time messaging
@@ -96,7 +96,7 @@ The system supports **role-based access for students and faculty**, with a secur
 
 ---
 
-### 📅 Timetable Management
+### Timetable Management
 
 * Faculty timetable with class schedules
 * Student timetable based on:
@@ -107,7 +107,7 @@ The system supports **role-based access for students and faculty**, with a secur
 
 ---
 
-### 🔔 Reminder System
+### Reminder System
 
 * Faculty can create reminders
 * Helps manage:
@@ -117,7 +117,7 @@ The system supports **role-based access for students and faculty**, with a secur
 
 ---
 
-## 🧠 System Architecture
+## System Architecture
 
 ```
 Frontend (HTML + CSS + JS)
@@ -142,7 +142,7 @@ Database (MongoDB Atlas)
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 smart-classroom-system/
@@ -166,7 +166,7 @@ smart-classroom-system/
 
 ---
 
-## ⚙️ Setup Instructions (Local)
+## Setup Instructions (Local)
 
 ### 1. Clone the repository
 
@@ -222,31 +222,31 @@ http://localhost:3000
 
 ---
 
-## 🔑 Sample Credentials
+## Sample Credentials
 
-### 👨‍🎓 Student
+### Student
 
 * Registration Number: `21BCE0001`
 * Password: `Pass@123`
 
-### 👨‍🏫 Faculty
+### Faculty
 
 * Employee ID: `10001`
 * Password: `Teach@123`
 
 ---
 
-## 🌐 Deployment
+## Deployment
 
 This application is deployed on **Render** and uses **MongoDB Atlas** as the cloud database.
 
-👉 Live URL:
+Live URL:
 https://smart-classroom-system-etvl.onrender.com
 
 ---
 
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 * Real-time communication using WebSockets
 * Cloud file storage (AWS S3 / Cloudinary)
@@ -257,7 +257,7 @@ https://smart-classroom-system-etvl.onrender.com
 
 ---
 
-## 🧩 Highlights
+## Highlights
 
 * Full-stack system with clean architecture
 * Secure session-based authentication
@@ -267,7 +267,7 @@ https://smart-classroom-system-etvl.onrender.com
 
 ---
 
-## 🎯 Summary
+## Summary
 
 The Smart Classroom System transforms traditional classroom workflows into a **digital, automated, and scalable platform**, improving efficiency for both students and faculty.
 
